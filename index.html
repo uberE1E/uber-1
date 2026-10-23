@@ -3,110 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D 次元基地對抗賽 (3D MOBA Web Edition)</title>
+    <title>次元基地對抗賽 - Roblox 1:1 完整復刻版</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
         body, html { width: 100%; height: 100%; overflow: hidden; background-color: #050508; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         #canvas-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        /* 頂部 HUD 面板 */
+        /* 頂部 Roblox  스타일 狀態列 */
         #status-bar {
             position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
-            width: 85%; max-width: 1000px; height: 50px;
-            background: rgba(15, 18, 28, 0.85); border: 2px solid #0096ff; border-radius: 12px;
+            width: 90%; max-width: 1050px; height: 45px;
+            background: rgba(15, 18, 28, 0.9); border: 2px solid #0096ff; border-radius: 10px;
             display: flex; align-items: center; justify-content: space-around;
-            color: #fff; font-size: 14px; font-weight: bold; z-index: 10;
+            color: #fff; font-size: 13px; font-weight: bold; z-index: 10;
             box-shadow: 0 0 20px rgba(0, 150, 255, 0.4); backdrop-filter: blur(5px);
         }
-        .stat-item { display: flex; align-items: center; gap: 6px; }
+        .stat-item { display: flex; align-items: center; gap: 5px; }
         
-        /* 右側魔量顯示器 */
+        /* 右側魔量顯示器 (對應 RightSideManaGui) */
         #right-mana-gui {
-            position: absolute; right: 25px; bottom: 120px; width: 220px; height: 45px;
-            background: rgba(15, 18, 28, 0.85); border: 2px solid #0096ff; border-radius: 8px;
+            position: absolute; right: 25px; bottom: 130px; width: 220px; height: 45px;
+            background: rgba(15, 18, 28, 0.9); border: 2px solid #0096ff; border-radius: 8px;
             padding: 8px; display: flex; flex-direction: column; justify-content: center; z-index: 10;
             box-shadow: 0 0 15px rgba(0, 150, 255, 0.3);
         }
-        .bar-bg { width: 100%; height: 22px; background: #0a0f1e; border-radius: 4px; position: relative; overflow: hidden; }
-        .bar-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #0080ff, #00d4ff); transition: width 0.2s ease-out; }
-        .bar-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: #fff; text-shadow: 1px 1px 2px #000; }
+        .bar-bg { width: 100%; height: 20px; background: #0a0f1e; border-radius: 4px; position: relative; overflow: hidden; }
+        .bar-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #0080ff, #00d4ff); transition: width 0.15s ease-out; }
+        .bar-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #fff; text-shadow: 1px 1px 2px #000; }
         
-        /* 左側商店面板 */
+        /* 左側戰場商店 (HudFrame) */
         #shop-frame {
             position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
-            width: 260px; background: rgba(20, 20, 30, 0.9); border: 2px solid #444; border-radius: 12px;
-            padding: 15px; display: flex; flex-direction: column; gap: 8px; z-index: 10;
+            width: 250px; background: rgba(20, 20, 30, 0.92); border: 2px solid #444; border-radius: 12px;
+            padding: 12px; display: flex; flex-direction: column; gap: 7px; z-index: 10;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
         }
-        .shop-title { color: #ffd700; text-align: center; font-size: 16px; margin-bottom: 5px; font-weight: bold; }
+        .shop-title { color: #ffd700; text-align: center; font-size: 15px; margin-bottom: 3px; font-weight: bold; }
         .shop-btn {
-            width: 100%; padding: 8px; background: #2a2a38; border: 1px solid #555; color: #fff;
-            border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; text-align: left;
+            width: 100%; padding: 7px; background: #2a2a38; border: 1px solid #555; color: #fff;
+            border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; text-align: left;
             transition: all 0.2s; display: flex; justify-content: space-between;
         }
-        .shop-btn:hover { background: #0096ff; border-color: #fff; transform: scale(1.02); }
-        .shop-btn:disabled { background: #1a1a20; color: #666; border-color: #333; cursor: not-allowed; transform: none; }
+        .shop-btn:hover { background: #0096ff; border-color: #fff; }
         
-        /* 底部技能快捷欄 */
+        /* 底部技能快捷欄 (Backpack 熱鍵欄 1-7) */
         #skill-bar {
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 10px; z-index: 10; background: rgba(10, 10, 15, 0.8);
-            padding: 10px 15px; border-radius: 12px; border: 1px solid #333;
+            display: flex; gap: 8px; z-index: 10; background: rgba(10, 10, 15, 0.85);
+            padding: 8px 12px; border-radius: 12px; border: 1px solid #333;
         }
         .skill-slot {
-            width: 65px; height: 65px; background: #1a1a24; border: 2px solid #555; border-radius: 8px;
+            width: 60px; height: 60px; background: #1a1a24; border: 2px solid #555; border-radius: 8px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: #fff; font-size: 11px; cursor: pointer; position: relative; overflow: hidden;
-            transition: all 0.2s;
+            color: #fff; font-size: 10px; cursor: pointer; position: relative; overflow: hidden;
         }
         .skill-slot.active { border-color: #00ffcc; box-shadow: 0 0 10px #00ffcc; }
-        .skill-key { position: absolute; top: 3px; left: 5px; font-size: 10px; color: #ffd700; font-weight: bold; }
-        .skill-cd { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.75); display: flex; align-items: center; justify-content: center; color: #ff3333; font-size: 14px; font-weight: bold; }
+        .skill-key { position: absolute; top: 2px; left: 4px; font-size: 9px; color: #ffd700; font-weight: bold; }
         
-        /* 主選單 */
+        /* 主選單 (MenuFrame) */
         #menu-overlay {
-            position: absolute; inset: 0; background: rgba(5, 5, 10, 0.85); z-index: 100;
+            position: absolute; inset: 0; background: rgba(5, 5, 10, 0.9); z-index: 100;
             display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px);
         }
         .menu-card {
             width: 420px; background: rgba(20, 24, 36, 0.95); border: 2px solid #0096ff; border-radius: 16px;
             padding: 30px; text-align: center; color: #fff; box-shadow: 0 0 30px rgba(0, 150, 255, 0.5);
         }
-        .menu-title { font-size: 32px; color: #00d4ff; margin-bottom: 10px; text-shadow: 0 0 10px #0096ff; }
+        .menu-title { font-size: 30px; color: #00d4ff; margin-bottom: 8px; text-shadow: 0 0 10px #0096ff; }
         .menu-btn {
-            width: 100%; padding: 14px; margin: 10px 0; background: linear-gradient(135deg, #0080ff, #00d4ff);
-            border: none; border-radius: 8px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 128, 255, 0.4); transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%; padding: 13px; margin: 8px 0; background: linear-gradient(135deg, #0080ff, #00d4ff);
+            border: none; border-radius: 8px; color: #fff; font-size: 15px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 128, 255, 0.4); transition: transform 0.2s;
         }
-        .menu-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 212, 255, 0.6); }
-        .skin-toggle { margin-top: 15px; font-size: 13px; color: #aaa; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+        .menu-btn:hover { transform: translateY(-2px); }
+        .skin-toggle { margin-top: 12px; font-size: 12px; color: #aaa; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
         
-        /* 視野警告 Popup */
+        /* 視野警告 (VisionWarning) */
         #vision-warning {
             position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
-            background: rgba(180, 0, 0, 0.85); color: #fff; padding: 10px 25px; border-radius: 8px;
-            font-size: 16px; font-weight: bold; border: 1px solid #ff4444; z-index: 20;
+            background: rgba(180, 0, 0, 0.9); color: #fff; padding: 8px 20px; border-radius: 6px;
+            font-size: 14px; font-weight: bold; border: 1px solid #ff4444; z-index: 20;
             display: none; box-shadow: 0 0 15px #ff0000;
         }
 
-        /* 3D 傷害飄字/血條 Canvas Overlay 模擬 */
+        /* 3D 浮動傷害數字 / 名牌 (BillboardGui 模擬) */
         .floating-text {
             position: absolute; font-family: 'Arial Black', sans-serif; font-weight: 900;
-            pointer-events: none; z-index: 5; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+            pointer-events: none; z-index: 5; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000;
             animation: floatUp 1s ease-out forwards;
         }
-        @keyframes floatUp { 0% { transform: translate(-50%, 0) scale(1); opacity: 1; } 100% { transform: translate(-50%, -40px) scale(1.2); opacity: 0; } }
+        @keyframes floatUp { 0% { transform: translate(-50%, 0) scale(1); opacity: 1; } 100% { transform: translate(-50%, -35px) scale(1.1); opacity: 0; } }
     </style>
 </head>
 <body>
     <div id="canvas-container"></div>
 
-    <!-- 主選單 -->
+    <!-- 主選單 (MenuFrame) -->
     <div id="menu-overlay">
         <div class="menu-card">
             <h1 class="menu-title">次元基地對抗賽</h1>
-            <p style="color:#aaa; font-size:13px; margin-bottom:20px;">3D WebGL 完整移植版 (包含 AI 大腦與豪華材質)</p>
-            <button class="menu-btn" onclick="startGame('AI')">🤖 單人 AI 戰役 (3v3)</button>
+            <p style="color:#aaa; font-size:12px; margin-bottom:18px;">Roblox Luau 1:1 完整網頁復刻版</p>
+            <button class="menu-btn" onclick="startGame('AI')">🤖 單人 AI 戰役 (3v3 智能對抗)</button>
             <button class="menu-btn" style="background:linear-gradient(135deg, #e63946, #ff0055);" onclick="startGame('PVP')">⚔️ 真人 3V3 快速對戰</button>
             <label class="skin-toggle">
                 <input type="checkbox" id="deluxe-skin-checkbox" checked> ✨ 啟用豪華炫彩特效材質包 (Deluxe VFX)
@@ -114,16 +111,16 @@
         </div>
     </div>
 
-    <!-- 頂部 HUD 面板 -->
+    <!-- 頂部狀態列 (StatusBar) -->
     <div id="status-bar" style="display:none;">
         <div class="stat-item" style="color:#ff5555;"><span id="hud-hp">❤️ HP: 2000/2000</span></div>
         <div class="stat-item" style="color:#ffd700;"><span id="hud-gold">💰 金幣: 400</span></div>
-        <div class="stat-item" style="color:#55ff55;"><span id="hud-kda">⚔️ K/D/A: 0/0/0</span></div>
-        <div class="stat-item" style="color:#aaa;"><span id="hud-bases">🔵藍: 6750 | 🔴紅: 6750</span></div>
-        <div class="stat-item" style="color:#aaccff;"><span id="hud-time">⏱️ 時間: 00:00</span></div>
+        <div class="stat-item" style="color:#55ff55;"><span id="hud-kda">⚔️ 擊殺:0 死亡:0 助攻:0</span></div>
+        <div class="stat-item" style="color:#aaccff;"><span id="hud-bases">🔵藍基地: 6750 | 🔴紅基地: 6750</span></div>
+        <div class="stat-item" style="color:#ccc;"><span id="hud-time">⏱️ 時間: 00:00</span></div>
     </div>
 
-    <!-- 右側魔量顯示器 (完全比照原創) -->
+    <!-- 右側魔量顯示器 (RightSideManaGui) -->
     <div id="right-mana-gui" style="display:none;">
         <div class="bar-bg">
             <div id="mana-bar-fill" class="bar-fill"></div>
@@ -131,7 +128,7 @@
         </div>
     </div>
 
-    <!-- 左側技能升級商店 (含金幣扣除邏輯) -->
+    <!-- 左側戰場商店 (HudFrame) -->
     <div id="shop-frame" style="display:none;">
         <div class="shop-title">🛒 戰場強化商店</div>
         <button class="shop-btn" onclick="buyUpgrade('Fireball')"><span>🔥 升級 火球術</span><span id="cost-Fireball">$100</span></button>
@@ -144,10 +141,10 @@
         <button class="shop-btn" disabled><span>🛡️ 無敵 (不可升級)</span><span>-</span></button>
     </div>
 
-    <!-- 底部技能欄 (熱鍵 1-7) -->
+    <!-- 底部技能快捷欄 -->
     <div id="skill-bar" style="display:none;"></div>
 
-    <!-- 視野警告提示 -->
+    <!-- 視野系統警告 (VisionWarning) -->
     <div id="vision-warning">❌ [視野系統] 目標位置在迷霧中，無法施放技能！</div>
 
     <!-- Three.js CDN -->
@@ -155,13 +152,12 @@
 
     <script>
         /* ============================================================================
-         * 1. 遊戲核心變數與全域數據結構
+         * 1. 核心資料結構與全域設定 (對應 基地-SCRIPT.txt)
          * ============================================================================ */
         let scene, camera, renderer, clock;
         let gameActive = false, gameStartTime = 0;
         let pvpMode = false, deluxeVFX = true;
         
-        // 戰場實體與數據
         const MAP_RADIUS = 180, BASE_DIST = 720, VISION_RANGE = 90;
         let player = {
             hp: 2000, maxHp: 2000, gold: 400, mana: 200, maxMana: 200,
@@ -176,20 +172,19 @@
             Red: { pos: new THREE.Vector3(0, 0, BASE_DIST/2), hp: 6750, maxHp: 6750, mesh: null, towers: [] }
         };
 
-        let entities = []; // 包含 AI 英雄與野怪
-        let projectiles = []; // 包含飛行的火球、隕石、雷電鏈等
+        let entities = []; // AI 英雄與野怪清單
+        let projectiles = []; // 飛行的火球、隕石等
         let terrainMesh, sunLight;
         const keys = {};
 
-        // 技能冷卻與耗魔設定 (完全對應原始碼)
         const MANA_COSTS = { Fireball:20, Lightning:35, Meteor:60, Blizzard:45, Heal:40, Shield:30, Speed:25 };
         const SKILL_BASE_CD = { Fireball:1.5, Lightning:6, Meteor:10, Blizzard:8, Heal:7, Shield:12, Speed:7 };
         const UPGRADE_COSTS = { Fireball:100, Lightning:150, Meteor:200, Blizzard:180, Heal:120, Speed:100, Health:80 };
         const SKILL_NAMES = ["Fireball", "Lightning", "Meteor", "Blizzard", "Heal", "Shield", "Speed"];
-        const SKILL_ICONS = { Fireball:"🔥火球", Lightning:"⚡閃電", Meteor:"☄️隕石", Blizzard:"❄️暴雪", Heal:"💚治癒", Shield:"🛡️無敵", Speed:"💨加速" };
+        const SKILL_LABELS = { Fireball:"🔥火球", Lightning:"⚡閃電", Meteor:"☄️隕石", Blizzard:"❄️暴雪", Heal:"💚治癒", Shield:"🛡️無敵", Speed:"💨加速" };
 
         /* ============================================================================
-         * 2. Q-Learning AI 自學大腦 (100% 機制重現)
+         * 2. Q-Learning 自學 AI 英雄大腦 (對應 基地-SCRIPT.txt 智能決策)
          * ============================================================================ */
         let qTable = {};
         const AI_ACTIONS = ["推進基地", "撤退補給", "微觀拉打", "清理野怪", "技能_火球", "技能_閃電", "技能_隕石", "技能_暴風雪", "技能_治癒", "技能_無敵", "技能_加速"];
@@ -207,15 +202,8 @@
             return best;
         }
 
-        function updateQTable(state, action, reward, nextState) {
-            if (!qTable[state]) return;
-            let oldV = qTable[state][action] || 0;
-            let maxNext = Math.max(...Object.values(qTable[nextState] || {a:0}));
-            qTable[state][action] = oldV + 0.2 * (reward + 0.9 * maxNext - oldV);
-        }
-
         /* ============================================================================
-         * 3. 3D 場景、燈光、塔身與地形建立 (含彈坑填平與晝夜)
+         * 3. 3D 場景、燈光、材質與 Roblox 風格物件建立 (對應 基地-SCRIPT.txt)
          * ============================================================================ */
         function init3DWorld() {
             const container = document.getElementById('canvas-container');
@@ -232,14 +220,13 @@
 
             clock = new THREE.Clock();
 
-            // 燈光與晝夜
-            const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+            // 燈光與太陽
+            const ambient = new THREE.AmbientLight(0xffffff, 0.45);
             scene.add(ambient);
 
-            sunLight = new THREE.DirectionalLight(0xfffaed, 1.2);
+            sunLight = new THREE.DirectionalLight(0xfffaed, 1.3);
             sunLight.position.set(200, 400, 100);
             sunLight.castShadow = true;
-            sunLight.shadow.mapSize.width = 2048; sunLight.shadow.mapSize.height = 2048;
             scene.add(sunLight);
 
             buildTerrainAndRoads();
@@ -252,35 +239,34 @@
             renderer.domElement.addEventListener('pointerdown', onDocumentMouseDown);
         }
 
-        // 3D 平滑地形與橋樑道路 (含 Ramp 坡道)
+        // 地形與橋樑道路 (BattleRoads 與坡道)
         function buildTerrainAndRoads() {
-            const geo = new THREE.PlaneGeometry(1200, BASE_DIST + 600, 120, 120);
+            const geo = new THREE.PlaneGeometry(1200, BASE_DIST + 600, 100, 100);
             geo.rotateX(-Math.PI / 2);
-            const mat = new THREE.MeshStandardMaterial({ color: 0x2d4c1e, roughness: 0.8 });
+            const mat = new THREE.MeshStandardMaterial({ color: 0x2d4c1e, roughness: 0.85 });
             terrainMesh = new THREE.Mesh(geo, mat);
             terrainMesh.receiveShadow = true;
             scene.add(terrainMesh);
 
-            // 中央石板橋與坡道 (BattleRoads)
+            // 中央橋樑
             const bridgeGeo = new THREE.BoxGeometry(64, 4, BASE_DIST * 0.7);
-            const bridgeMat = new THREE.MeshStandardMaterial({ color: 0x4a4e5a, roughness: 0.5 });
+            const bridgeMat = new THREE.MeshStandardMaterial({ color: 0x555965, roughness: 0.5 });
             const bridge = new THREE.Mesh(bridgeGeo, bridgeMat);
-            bridge.position.set(0, 10, 0);
+            bridge.position.set(0, 12, 0);
             bridge.receiveShadow = true; bridge.castShadow = true;
             scene.add(bridge);
 
-            // 車輛佈署 (Koenigsegg Jesko 重用)
-            [ -150, -100, 100, 150 ].forEach((z, i) => {
-                const carGeo = new THREE.BoxGeometry(6, 3, 12);
-                const carMat = new THREE.MeshStandardMaterial({ color: i%2===0 ? 0xff0055 : 0x00ccff, metalness:0.8, roughness:0.2 });
-                const car = new THREE.Mesh(carGeo, carMat);
-                car.position.set(i % 2 === 0 ? 15 : -15, 13.5, z);
-                car.castShadow = true;
-                scene.add(car);
+            // 6 輛 A-Chassis 對戰車輛重用 (Koenigsegg Jesko 模擬)
+            [ -160, -100, -40, 40, 100, 160 ].forEach((z, i) => {
+                const carGroup = new THREE.Group();
+                const body = new THREE.Mesh(new THREE.BoxGeometry(6, 2.5, 12), new THREE.MeshStandardMaterial({ color: i%2===0 ? 0x00d4ff : 0xff234b, metalness:0.9, roughness:0.1 }));
+                body.position.y = 1.5; carGroup.add(body);
+                carGroup.position.set(i % 2 === 0 ? 18 : -18, 14, z);
+                scene.add(carGroup);
             });
         }
 
-        // 金字塔基地台與 12 座高亮塔身 + 雙重水晶核心
+        // 金字塔基地台與 12 座高亮塔身 + 雙重水晶核心 (createFloatingCrystal)
         function buildBasesAndTowers() {
             ['Blue', 'Red'].forEach(team => {
                 const isBlue = team === 'Blue';
@@ -289,87 +275,67 @@
 
                 // 1. 金字塔基地
                 const pyramidGroup = new THREE.Group();
-                const baseGeo = new THREE.ConeGeometry(30, 20, 4);
+                const baseGeo = new THREE.ConeGeometry(32, 14, 4);
                 const baseMat = new THREE.MeshStandardMaterial({ color: isBlue ? 0xf0f5ff : 0x41191c, roughness: 0.3 });
                 const pyramid = new THREE.Mesh(baseGeo, baseMat);
-                pyramid.position.y = 10;
+                pyramid.position.y = 7;
                 pyramidGroup.add(pyramid);
 
-                // 頂端雙重浮空水晶 (Glass 外殼 + Neon 核心)
                 const crystalCore = createFloatingCrystal(mainColor);
-                crystalCore.position.set(0, 25, 0);
+                crystalCore.position.set(0, 22, 0);
                 pyramidGroup.add(crystalCore);
 
                 pyramidGroup.position.copy(pos);
                 scene.add(pyramidGroup);
                 TEAMS[team].mesh = pyramidGroup;
 
-                // 2. 12座環形防禦塔 (PILLAR_COUNT = 12)
+                // 2. 12 座環形防禦塔 (PILLAR_COUNT = 12)
                 const pillarRadius = MAP_RADIUS / 2;
                 TEAMS[team].towers = [];
                 for (let i = 0; i < 12; i++) {
                     const angle = (i / 12) * Math.PI * 2;
-                    const towerPos = new THREE.Vector3(
-                        pos.x + Math.cos(angle) * pillarRadius,
-                        0,
-                        pos.z + Math.sin(angle) * pillarRadius
-                    );
-                    const pillarGroup = new THREE.Group();
-                    const pHeight = 25 + Math.random() * 15;
-                    const pGeo = new THREE.BoxGeometry(6, pHeight, 6);
-                    const pMat = new THREE.MeshStandardMaterial({ color: isBlue ? 0xe0e8ff : 0x3d1418, metalness: 0.3 });
+                    const tPos = new THREE.Vector3(pos.x + Math.cos(angle) * pillarRadius, 0, pos.z + Math.sin(angle) * pillarRadius);
+                    const pGroup = new THREE.Group();
+                    const pHeight = 35 + Math.random() * 20;
+                    const pGeo = new THREE.BoxGeometry(8, pHeight, 8);
+                    const pMat = new THREE.MeshStandardMaterial({ color: isBlue ? 0xf0f5ff : 0x41191c, metalness: 0.4, roughness: 0.2 });
                     const pillar = new THREE.Mesh(pGeo, pMat);
                     pillar.position.y = pHeight / 2;
-                    pillarGroup.add(pillar);
+                    pGroup.add(pillar);
 
-                    // 霓虹光條與水晶
                     const crystal = createFloatingCrystal(mainColor);
-                    crystal.position.set(0, pHeight + 4, 0);
-                    pillarGroup.add(crystal);
+                    crystal.position.set(0, pHeight + 5, 0);
+                    pGroup.add(crystal);
 
-                    pillarGroup.position.copy(towerPos);
-                    scene.add(pillarGroup);
-                    TEAMS[team].towers.push({ hp: 1500, maxHp: 1500, mesh: pillarGroup, pos: towerPos, crystal });
+                    pGroup.position.copy(tPos);
+                    scene.add(pGroup);
+                    TEAMS[team].towers.push({ hp: 1500, maxHp: 1500, mesh: pGroup, pos: tPos, crystal });
                 }
             });
         }
 
-        // 雙重水晶核心 (Glass + Neon)
+        // 雙重水晶核心 (Glass 外殼 + Neon 內核)
         function createFloatingCrystal(colorHex) {
             const group = new THREE.Group();
-            const outerGeo = new THREE.OctahedronGeometry(4);
-            const outerMat = new THREE.MeshPhysicalMaterial({ color: colorHex, transmission: 0.6, opacity: 0.8, transparent: true, roughness: 0.1 });
-            const outer = new THREE.Mesh(outerGeo, outerMat);
-
-            const innerGeo = new THREE.OctahedronGeometry(1.8);
-            const innerMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-            const inner = new THREE.Mesh(innerGeo, innerMat);
-
+            const outer = new THREE.Mesh(new THREE.OctahedronGeometry(4.5), new THREE.MeshPhysicalMaterial({ color: colorHex, transmission: 0.7, opacity: 0.75, transparent: true, roughness: 0.1 }));
+            const inner = new THREE.Mesh(new THREE.OctahedronGeometry(2), new THREE.MeshBasicMaterial({ color: 0xffffff }));
             group.add(outer); group.add(inner);
             return group;
         }
 
-        // 玩家 3D 人型 Mesh 與頭頂名牌
+        // 玩家 3D 模型
         function buildPlayerMesh() {
             const group = new THREE.Group();
-            const bodyGeo = new THREE.CylinderGeometry(1.2, 1.2, 4);
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0096ff });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = 2; body.castShadow = true;
-            group.add(body);
-
-            const headGeo = new THREE.SphereGeometry(1.2);
-            const headMat = new THREE.MeshStandardMaterial({ color: 0xffccaa });
-            const head = new THREE.Mesh(headGeo, headMat);
-            head.position.y = 4.5;
-            group.add(head);
-
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 4), new THREE.MeshStandardMaterial({ color: 0x0080ff }));
+            body.position.y = 2; group.add(body);
+            const head = new THREE.Mesh(new THREE.SphereGeometry(1.2), new THREE.MeshStandardMaterial({ color: 0xffccaa }));
+            head.position.y = 4.5; group.add(head);
             scene.add(group);
             player.mesh = group;
         }
 
         /* ============================================================================
-         * 4. 戰局流程、野怪 (史萊姆) 蒸發與 Q-Learning AI 英雄
+         * 4. 戰局流程、野怪 (史萊姆跳躍與陽光蒸發) 與 AI 大腦 (對應 基地-SCRIPT.txt)
          * ============================================================================ */
         function startGame(mode) {
             pvpMode = (mode === 'PVP');
@@ -377,41 +343,34 @@
             document.getElementById('menu-overlay').style.display = 'none';
 
             ['status-bar', 'right-mana-gui', 'shop-frame', 'skill-bar'].forEach(id => {
-                document.getElementById(id).style.display = (id === 'shop-frame') ? 'flex' : 'flex';
+                document.getElementById(id).style.display = 'flex';
             });
 
             gameActive = true;
             gameStartTime = Date.now();
             initSkillUI();
 
-            // 生成 2 名藍方 AI 與 3 名紅方 AI (比照原始碼 3v3)
             entities = [];
             for (let i = 0; i < 2; i++) spawnBotAI('Blue');
             for (let i = 0; i < 3; i++) spawnBotAI('Red');
         }
 
-        // 🟢 史萊姆跳躍野怪生成 (與陽光蒸發系統)
+        // 🟢 野怪生成 (史萊姆跳躍版)
         function spawnWildMonster() {
-            if (entities.filter(e => e.type === 'Monster').length >= 12 || !gameActive) return;
+            if (entities.filter(e => e.type === 'Monster').length >= 19 || !gameActive) return;
 
             const group = new THREE.Group();
-            const geo = new THREE.BoxGeometry(3, 3, 3);
-            const mat = new THREE.MeshStandardMaterial({ color: 0x228b22, roughness: 0.2, transparent: true, opacity: 0.85 });
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.position.y = 1.5;
-            group.add(mesh);
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 3), new THREE.MeshStandardMaterial({ color: 0x283c28, roughness: 0.3 }));
+            mesh.position.y = 1.5; group.add(mesh);
 
-            // 隨機眼睛
-            const eyeGeo = new THREE.BoxGeometry(0.4, 0.4, 0.4);
-            const eyeMat = new THREE.MeshBasicMaterial({ color: Math.random() * 0xffffff });
+            // 眼睛
             [-0.6, 0.6].forEach(x => {
-                const eye = new THREE.Mesh(eyeGeo, eyeMat);
-                eye.position.set(x, 2, -1.5);
-                group.add(eye);
+                const eye = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), new THREE.MeshBasicMaterial({ color: Math.random() * 0xffffff }));
+                eye.position.set(x, 2, -1.5); group.add(eye);
             });
 
             const rx = (Math.random() - 0.5) * 400;
-            const rz = (Math.random() - 0.5) * (BASE_DIST * 0.8);
+            const rz = (Math.random() - 0.5) * (BASE_DIST + 200);
             group.position.set(rx, 0, rz);
             scene.add(group);
 
@@ -421,11 +380,11 @@
             });
         }
 
-        // 生成 AI 人型英雄
+        // AI 英雄實體
         function spawnBotAI(team) {
             const group = new THREE.Group();
             const isRed = (team === 'Red');
-            const body = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 4), new THREE.MeshStandardMaterial({ color: isRed ? 0xff0000 : 0x00ccff }));
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 4), new THREE.MeshStandardMaterial({ color: isRed ? 0xff0000 : 0x0080ff }));
             body.position.y = 2; group.add(body);
             const head = new THREE.Mesh(new THREE.SphereGeometry(1.2), new THREE.MeshStandardMaterial({ color: 0xffccaa }));
             head.position.y = 4.5; group.add(head);
@@ -434,28 +393,26 @@
             scene.add(group);
 
             entities.push({
-                type: 'Hero', team: team, mesh: group, hp: 2000, maxHp: 2000, mana: 200, maxMana: 200, gold: 400,
+                type: 'Hero', team: team, mesh: group, hp: 2000, maxHp: 2000, mana: 200, maxMana: 200,
                 skills: { Fireball:1, Lightning:0, Meteor:0, Blizzard:0, Heal:1, Shield:1, Speed:1 },
-                isBot: true, name: isRed ? "深淵學習者 AI" : "聖殿先鋒 AI"
+                isBot: true
             });
         }
 
         /* ============================================================================
-         * 5. 技能施放、豪華炫彩特效 (Deluxe VFX) 與彈坑挖取
+         * 5. 技能施放、VFX 特效與彈坑挖取 (對應 基地-LOCALSCRIPT.txt)
          * ============================================================================ */
         function castSkill(skillName, targetPos) {
             if (!gameActive || player.paralyzed) return;
             const cost = MANA_COSTS[skillName] || 0;
             if (player.mana < cost) return;
 
-            // 檢查冷卻
             const now = Date.now();
             if (player.cd[skillName] && now < player.cd[skillName]) return;
 
-            // 視野檢查 (VisionModule 邏輯)
+            // 視野檢查 (VisionModule)
             if (skillName !== 'Heal' && skillName !== 'Shield' && skillName !== 'Speed') {
-                const distToSelf = player.pos.distanceTo(targetPos);
-                if (distToSelf > VISION_RANGE) {
+                if (player.pos.distanceTo(targetPos) > VISION_RANGE) {
                     showVisionWarning();
                     return;
                 }
@@ -463,59 +420,36 @@
 
             player.mana -= cost;
             player.cd[skillName] = now + (SKILL_BASE_CD[skillName] || 5) * 1000;
-
             const startPos = player.pos.clone().add(new THREE.Vector3(0, 5, 0));
 
-            // 🔥 火球術 (含進度式傷害與爆炸彈坑)
+            // 🔥 火球術
             if (skillName === 'Fireball') {
-                const ball = new THREE.Mesh(
-                    new THREE.SphereGeometry(deluxeVFX ? 2 : 1.2),
-                    new THREE.MeshBasicMaterial({ color: 0xff4500 })
-                );
-                ball.position.copy(startPos);
-                scene.add(ball);
-
-                const dir = targetPos.clone().sub(startPos).normalize();
-                projectiles.push({
-                    type: 'Fireball', mesh: ball, dir: dir, speed: 120,
-                    owner: 'player', spawnTime: now, level: player.skills.Fireball
-                });
+                const ball = new THREE.Mesh(new THREE.SphereGeometry(deluxeVFX ? 2.5 : 1.5), new THREE.MeshBasicMaterial({ color: 0xff4500 }));
+                ball.position.copy(startPos); scene.add(ball);
+                projectiles.push({ type: 'Fireball', mesh: ball, dir: targetPos.clone().sub(startPos).normalize(), speed: 110, spawnTime: now, level: player.skills.Fireball });
             }
-            // ⚡ 閃電鏈 (自動連鎖彈跳與麻痺)
+            // ⚡ 閃電鏈
             else if (skillName === 'Lightning') {
                 triggerLightningChain(startPos, targetPos, player.skills.Lightning);
             }
-            // ☄️ 隕石術 (高空墜落爆炸)
+            // ☄️ 隕石術
             else if (skillName === 'Meteor') {
-                const meteor = new THREE.Mesh(
-                    new THREE.SphereGeometry( deluxeVFX ? 5 : 3 ),
-                    new THREE.MeshStandardMaterial({ color: 0x332222, roughness: 0.9 })
-                );
-                meteor.position.set(targetPos.x, 150, targetPos.z);
-                scene.add(meteor);
-
-                projectiles.push({
-                    type: 'Meteor', mesh: meteor, targetY: 0, speed: 100,
-                    targetPos: targetPos, level: player.skills.Meteor
-                });
+                const met = new THREE.Mesh(new THREE.SphereGeometry(deluxeVFX ? 6 : 4), new THREE.MeshStandardMaterial({ color: 0x231e1e, roughness: 0.9 }));
+                met.position.set(targetPos.x, 150, targetPos.z); scene.add(met);
+                projectiles.push({ type: 'Meteor', mesh: met, speed: 95, targetPos: targetPos, level: player.skills.Meteor });
             }
-            // ❄️ 暴風雪 (區域冰霜與暴雪緩速)
+            // ❄️ 暴風雪
             else if (skillName === 'Blizzard') {
                 createBlizzardZone(targetPos, player.skills.Blizzard);
             }
-            // 💚 治癒術 (回復與 30 格內基地加血)
+            // 💚 治癒術
             else if (skillName === 'Heal') {
                 const healAmt = 60 + (player.skills.Heal - 1) * 40;
                 player.hp = Math.min(player.maxHp, player.hp + healAmt);
-                player.mana = Math.min(player.maxMana + 200, player.mana + 200); // 溢出轉上限
-                showFloatingText(player.pos, `+${healAmt}`, '#55ff55');
-
-                // 基地回血
-                if (player.pos.distanceTo(TEAMS.Blue.pos) <= 90) {
-                    TEAMS.Blue.hp = Math.min(TEAMS.Blue.maxHp, TEAMS.Blue.hp + TEAMS.Blue.maxHp * 0.08);
-                }
+                player.mana = Math.min(player.maxMana + 200, player.mana + 200);
+                showFloatingText(player.pos, `+${healAmt}`, '#50ff78');
             }
-            // 🛡️ 無敵護盾
+            // 🛡️ 護盾術
             else if (skillName === 'Shield') {
                 player.shieldActive = true;
                 setTimeout(() => player.shieldActive = false, 4000);
@@ -527,85 +461,65 @@
             }
         }
 
-        // ⚡ 閃電鏈連鎖彈跳實作
+        // 閃電鏈連鎖彈跳與麻痺 (applyParalysisEffect)
         function triggerLightningChain(start, target, level) {
             let current = start;
             let targets = entities.filter(e => e.hp > 0);
-            let hits = 0;
-
-            for (let i = 0; i < Math.min(5, targets.length); i++) {
+            for (let i = 0; i < Math.min(4, targets.length); i++) {
                 let closest = targets[i];
                 if (!closest) break;
 
-                // 畫光束
-                const points = [current, closest.mesh.position.clone().add(new THREE.Vector3(0,2,0))];
-                const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-                const lineMat = new THREE.LineBasicMaterial({ color: 0x00ffff, linewidth: 3 });
-                const line = new THREE.Line(lineGeo, lineMat);
+                const points = [current, closest.mesh.position.clone().add(new THREE.Vector3(0, 2, 0))];
+                const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineBasicMaterial({ color: 0x00ffff, linewidth: 3 }));
                 scene.add(line);
-                setTimeout(() => scene.remove(line), 200);
+                setTimeout(() => scene.remove(line), 150);
 
                 const dmg = 25 + (level - 1) * 10;
                 closest.hp -= dmg;
-                closest.paralyzed = true; // 麻痺
+                closest.paralyzed = true;
                 setTimeout(() => closest.paralyzed = false, 2000);
-
                 showFloatingText(closest.mesh.position, `-${dmg}`, '#00ffff');
                 current = closest.mesh.position;
             }
         }
 
-        // ❄️ 暴風雪區域
+        // 暴風雪區域
         function createBlizzardZone(pos, level) {
-            const geo = new THREE.CylinderGeometry(25, 25, 1, 32);
-            const mat = new THREE.MeshBasicMaterial({ color: 0xaaeeff, transparent: true, opacity: 0.4 });
-            const zone = new THREE.Mesh(geo, mat);
-            zone.position.copy(pos);
-            scene.add(zone);
+            const zone = new THREE.Mesh(new THREE.CylinderGeometry(25, 25, 1, 32), new THREE.MeshBasicMaterial({ color: 0xa0e6ff, transparent: true, opacity: 0.4 }));
+            zone.position.copy(pos); scene.add(zone);
 
             let ticks = 0;
             const interval = setInterval(() => {
-                if (++ticks > 8 || !gameActive) {
-                    clearInterval(interval);
-                    scene.remove(zone);
-                    return;
-                }
+                if (++ticks > 9 || !gameActive) { clearInterval(interval); scene.remove(zone); return; }
                 const dmg = 8 + (level - 1) * 4;
                 entities.forEach(e => {
-                    if (e.mesh.position.distanceTo(pos) <= 25) {
+                    if (e.mesh.position.distanceTo(pos) <= 18) {
                         e.hp -= dmg;
-                        e.inBlizzard = true;
-                        showFloatingText(e.mesh.position, `-${dmg}`, '#aaeeff');
+                        showFloatingText(e.mesh.position, `-${dmg}`, '#a0e6ff');
                     }
                 });
             }, 500);
         }
 
-        // 地形彈坑挖取與爆炸 (FillBall / FillBlock 擬真)
+        // 爆炸彈坑地形改變 (FillBall 模擬)
         function createExplosionCrater(pos, radius) {
-            const expGeo = new THREE.SphereGeometry(radius, 16, 16);
-            const expMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.8 });
-            const exp = new THREE.Mesh(expGeo, expMat);
-            exp.position.copy(pos);
-            scene.add(exp);
+            const exp = new THREE.Mesh(new THREE.SphereGeometry(radius, 16, 16), new THREE.MeshBasicMaterial({ color: 0xff4500, transparent: true, opacity: 0.8 }));
+            exp.position.copy(pos); scene.add(exp);
 
-            // 彈坑視覺 (修改地形 vertex 高度)
             const posAttr = terrainMesh.geometry.attributes.position;
             for (let i = 0; i < posAttr.count; i++) {
-                const vx = posAttr.getX(i);
-                const vz = posAttr.getZ(i);
+                const vx = posAttr.getX(i), vz = posAttr.getZ(i);
                 const dist = Math.sqrt((vx - pos.x)**2 + (vz - pos.z)**2);
                 if (dist < radius) {
-                    posAttr.setY(i, posAttr.getY(i) - (radius - dist) * 0.3);
+                    posAttr.setY(i, posAttr.getY(i) - (radius - dist) * 0.25);
                 }
             }
             posAttr.needsUpdate = true;
-
             setTimeout(() => scene.remove(exp), 300);
         }
 
         /* ============================================================================
-         * 6. 主物理與渲染循環 (Heartbeat & Render Loop)
+         * 6. 遊戲主循環、物理、陽光蒸發與 AI 行為 (對應 基地-SCRIPT.txt)
          * ============================================================================ */
         function animate() {
             requestAnimationFrame(animate);
@@ -615,12 +529,10 @@
                 updatePlayerMovement(delta);
                 updateProjectiles(delta);
                 updateEntities(delta);
-                updateTowersAndBases(delta);
-                updateDayNightCycle();
+                updateSunlightEvaporation();
                 updateManaAndRegen(delta);
                 updateHUD();
             }
-
             renderer.render(scene, camera);
         }
 
@@ -640,8 +552,7 @@
                 player.mesh.position.copy(player.pos);
             }
 
-            // 第三人生跟隨鏡頭
-            camera.position.set(player.pos.x, player.pos.y + 40, player.pos.z + 50);
+            camera.position.set(player.pos.x, player.pos.y + 38, player.pos.z + 45);
             camera.lookAt(player.pos);
         }
 
@@ -650,28 +561,22 @@
                 const p = projectiles[i];
                 if (p.type === 'Fireball') {
                     p.mesh.position.add(p.dir.clone().multiplyScalar(p.speed * delta));
-                    
-                    // 碰撞檢測
                     if (p.mesh.position.y <= 1 || Date.now() - p.spawnTime > 3000) {
                         createExplosionCrater(p.mesh.position, 12);
-                        // 漸進式傷害 (Progressive Damage)
                         applyAreaDamage(p.mesh.position, 12, 35 + (p.level - 1) * 15);
-                        scene.remove(p.mesh);
-                        projectiles.splice(i, 1);
+                        scene.remove(p.mesh); projectiles.splice(i, 1);
                     }
                 } else if (p.type === 'Meteor') {
                     p.mesh.position.y -= p.speed * delta;
                     if (p.mesh.position.y <= 2) {
                         createExplosionCrater(p.targetPos, 25);
                         applyAreaDamage(p.targetPos, 25, 200 + (p.level - 1) * 25);
-                        scene.remove(p.mesh);
-                        projectiles.splice(i, 1);
+                        scene.remove(p.mesh); projectiles.splice(i, 1);
                     }
                 }
             }
         }
 
-        // 漸進式範圍傷害
         function applyAreaDamage(center, radius, baseDmg) {
             entities.forEach(e => {
                 const dist = e.mesh.position.distanceTo(center);
@@ -683,18 +588,16 @@
             });
         }
 
-        // ☀️ 野怪陽光蒸發系統 (Sun Direction Raycast)
-        function updateDayNightCycle() {
+        // ☀️ 陽光蒸發系統 (Lighting:GetSunDirection 模擬)
+        function updateSunlightEvaporation() {
             const timeSec = (Date.now() - gameStartTime) / 1000;
-            const angle = timeSec * 0.05;
-            sunLight.position.x = Math.cos(angle) * 300;
-            sunLight.position.y = Math.sin(angle) * 300;
+            const angle = timeSec * 0.04;
+            sunLight.position.x = Math.cos(angle) * 350;
+            sunLight.position.y = Math.sin(angle) * 350;
 
-            const isDay = sunLight.position.y > 0;
-            if (isDay) {
-                // 白天直射陽光：蒸發野怪
+            if (sunLight.position.y > 0) {
                 entities.forEach((e, idx) => {
-                    if (e.type === 'Monster' && Math.random() < 0.02) {
+                    if (e.type === 'Monster' && Math.random() < 0.015) {
                         showFloatingText(e.mesh.position, "☀️ 陽光蒸發!", "#ffff55");
                         scene.remove(e.mesh);
                         entities.splice(idx, 1);
@@ -703,61 +606,39 @@
             }
         }
 
-        // 基地高額回魔與自動回魔循環
+        // 魔量高速回復系統 (基地內超高速回魔 30 點)[cite: 8]
         function updateManaAndRegen(delta) {
             let regen = 5 * delta;
-            if (player.pos.distanceTo(TEAMS.Blue.pos) <= 120) regen = 30 * delta; // 基地高速回魔
+            if (player.pos.distanceTo(TEAMS.Blue.pos) <= 120) regen = 30 * delta;
             if (player.speedBoost) regen *= 2;
             player.mana = Math.min(player.maxMana, player.mana + regen);
         }
 
-        // 防禦塔與基地攻擊 (Tower LostHp Formula)
-        function updateTowersAndBases(delta) {
-            ['Blue', 'Red'].forEach(team => {
-                const tData = TEAMS[team];
-                tData.towers.forEach(t => {
-                    if (t.hp <= 0) return;
-                    // 尋找敵方
-                    if (team === 'Blue') {
-                        entities.filter(e => e.team === 'Red').forEach(e => {
-                            if (e.mesh.position.distanceTo(t.pos) <= 90) {
-                                const dmg = tData.hp * 0.008 * delta; // 基地血量 0.008 比例傷害
-                                e.hp -= dmg;
-                            }
-                        });
-                    }
-                });
-            });
-        }
-
         function updateEntities(delta) {
-            // 定時生成野怪
-            if (Math.random() < 0.01) spawnWildMonster();
+            if (Math.random() < 0.012) spawnWildMonster();
 
             entities.forEach(e => {
                 if (e.type === 'Monster') {
-                    // 史萊姆跳躍物理 (Slime Jump)
+                    // 🟢 史萊姆跳躍物理 (Slime Jump)[cite: 8]
                     if (Date.now() - e.lastJump > 1500) {
-                        e.vy = 20;
-                        e.lastJump = Date.now();
+                        e.vy = 25; e.lastJump = Date.now();
                     }
                     e.mesh.position.y += e.vy * delta;
-                    if (e.mesh.position.y > 1.5) e.vy -= 40 * delta;
+                    if (e.mesh.position.y > 1.5) e.vy -= 50 * delta;
                     else { e.mesh.position.y = 1.5; e.vy = 0; }
                 } else if (e.isBot) {
-                    // Q-Learning AI 決策執行
                     const state = `${e.hp < 800 ? '殘血' : '滿血'}_${e.mana < 40 ? '乾涸' : '充沛'}`;
                     const act = getBestAiAction(state);
                     if (act === "推進基地") {
                         const target = e.team === 'Red' ? TEAMS.Blue.pos : TEAMS.Red.pos;
-                        e.mesh.position.add(target.clone().sub(e.mesh.position).normalize().multiplyScalar(15 * delta));
+                        e.mesh.position.add(target.clone().sub(e.mesh.position).normalize().multiplyScalar(14 * delta));
                     }
                 }
             });
         }
 
         /* ============================================================================
-         * 7. UI 與互動 (HUD / 商店 / 飄字 / 視野)
+         * 7. 介面、商店與互動控制 (對應 基地-LOCALSCRIPT.txt)[cite: 9]
          * ============================================================================ */
         function initSkillUI() {
             const bar = document.getElementById('skill-bar');
@@ -765,8 +646,7 @@
             SKILL_NAMES.forEach((s, i) => {
                 const slot = document.createElement('div');
                 slot.className = 'skill-slot';
-                slot.id = `skill-slot-${s}`;
-                slot.innerHTML = `<span class="skill-key">[${i+1}]</span><span>${SKILL_ICONS[s]}</span><span id="lv-${s}">Lv.1</span>`;
+                slot.innerHTML = `<span class="skill-key">[${i+1}]</span><span>${SKILL_LABELS[s]}</span><span id="lv-${s}" style="font-size:9px;color:#aaa;">Lv.1</span>`;
                 bar.appendChild(slot);
             });
         }
@@ -774,13 +654,12 @@
         function updateHUD() {
             document.getElementById('hud-hp').innerText = `❤️ HP: ${Math.floor(player.hp)}/${player.maxHp}`;
             document.getElementById('hud-gold').innerText = `💰 金幣: ${player.gold}`;
-            document.getElementById('hud-kda').innerText = `⚔️ K/D/A: ${player.kills}/${player.deaths}/${player.assists}`;
-            document.getElementById('hud-bases').innerText = `🔵藍: ${Math.floor(TEAMS.Blue.hp)} | 🔴紅: ${Math.floor(TEAMS.Red.hp)}`;
+            document.getElementById('hud-kda').innerText = `⚔️ 擊殺:${player.kills} 死亡:${player.deaths} 助攻:${player.assist || 0}`;
+            document.getElementById('hud-bases').innerText = `🔵藍基地: ${Math.floor(TEAMS.Blue.hp)} | 🔴紅基地: ${Math.floor(TEAMS.Red.hp)}`;
             
             const timeSec = Math.floor((Date.now() - gameStartTime) / 1000);
             document.getElementById('hud-time').innerText = `⏱️ 時間: ${Math.floor(timeSec/60)}:${timeSec%60}`;
 
-            // 魔量條
             const ratio = player.mana / player.maxMana;
             document.getElementById('mana-bar-fill').style.width = `${ratio * 100}%`;
             document.getElementById('mana-bar-text').innerText = `MP: ${Math.floor(player.mana)} / ${player.maxMana}`;
@@ -820,17 +699,12 @@
 
         function onDocumentMouseDown(event) {
             if (!gameActive) return;
-            const mouse = new THREE.Vector2(
-                (event.clientX / window.innerWidth) * 2 - 1,
-                -(event.clientY / window.innerHeight) * 2 + 1
-            );
+            const mouse = new THREE.Vector2((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
             const raycaster = new THREE.Raycaster();
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObject(terrainMesh);
             if (intersects.length > 0) {
-                const targetPos = intersects[0].point;
-                // 按下熱鍵或預設發射火球
-                castSkill('Fireball', targetPos);
+                castSkill('Fireball', intersects[0].point);
             }
         }
 
@@ -851,7 +725,6 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        // 初始化 3D 世界與渲染
         init3DWorld();
         animate();
     </script>
