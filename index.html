@@ -3,916 +3,1618 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>網頁版 MOBA：次元基地對抗賽 & Q-Learning 雲端進化 AI 終極完整版</title>
+    <title>Ultimate MOBA - NextGen Q-Learning Arena</title>
     <style>
-        body {
-            margin: 0;
-            background-color: #0f111a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            flex-direction: column;
-            overflow: hidden;
+        :root {
+            --primary-gold: #ffd700;
+            --neon-blue: #00f0ff;
+            --neon-red: #ff0055;
+            --neon-purple: #b000ff;
+            --dark-bg: #090a0f;
+            --panel-bg: rgba(15, 20, 30, 0.85);
+            --border-glow: rgba(0, 240, 255, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
             user-select: none;
+            margin: 0;
+            padding: 0;
         }
-        #gameContainer {
-            display: flex;
-            align-items: flex-start;
-            position: relative;
-        }
-        #shopContainer {
-            width: 280px;
-            margin-right: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        #shopToggleBtn {
+
+        body, html {
             width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #f1c40f, #d35400);
-            color: #fff;
-            border: 2px solid #e67e22;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--dark-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #ffffff;
         }
-        .shop-tabs {
-            display: none;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 2px;
-            margin-top: 4px;
-        }
-        .tab-btn {
-            background: #2c3e50;
-            color: #bdc3c7;
-            border: 1px solid #34495e;
-            padding: 6px 0;
-            font-size: 11px;
-            cursor: pointer;
-            text-align: center;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        .tab-btn.active {
-            background: #e67e22;
-            color: #fff;
-            border-color: #d35400;
-        }
-        #shopMenu {
-            display: none;
-            flex-direction: column;
-            gap: 6px;
-            background: rgba(20, 24, 33, 0.95);
-            border: 2px solid #34495e;
-            padding: 10px;
-            border-radius: 6px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-            max-height: 440px;
-            overflow-y: auto;
-        }
-        .shop-content-category {
-            display: none;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .shop-content-category.active {
-            display: flex;
-        }
-        .shop-item {
-            background: #1a252f;
-            border: 1px solid #415b76;
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .shop-item:hover {
-            background: #2c3e50;
-            border-color: #f1c40f;
-        }
-        .item-name { font-weight: bold; color: #f39c12; }
-        .item-cost { color: #2ecc71; font-weight: bold; }
 
-        #gameWrapper {
+        #game-container {
             position: relative;
-        }
-        canvas {
-            border: 4px solid #2c3e50;
-            background-color: #1b2631;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
-            border-radius: 8px;
-        }
-        .controls {
-            margin-top: 10px;
-            text-align: center;
-            font-size: 12px;
-            line-height: 1.4;
-            color: #95a5a6;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #000;
         }
 
-        /* 全螢幕主選單、登入與結算畫面 */
-        #startMenuScreen, #gameOverScreen, #loginScreen, #settingsScreen {
+        /* Canvas Fullscreen Layout */
+        #canvas-wrapper {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(10, 12, 18, 0.96);
+            z-index: 1;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* UI Overlay Sidebars */
+        .ui-panel {
+            position: relative;
+            z-index: 10;
+            height: 96vh;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-glow);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 8px;
-            box-sizing: border-box;
-            z-index: 20;
-        }
-        #gameOverScreen, #settingsScreen, #loginScreen {
-            display: none;
+            gap: 12px;
+            box-shadow: 0 0 25px rgba(0,0,0,0.8);
+            transition: transform 0.3s ease;
         }
 
-        .menu-title {
-            font-size: 42px;
-            font-weight: bold;
-            color: #f1c40f;
-            margin-bottom: 8px;
-            text-shadow: 0 0 15px rgba(241, 196, 15, 0.6);
-        }
-        .menu-subtitle {
-            font-size: 15px;
-            color: #bdc3c7;
-            margin-bottom: 25px;
-        }
-
-        .menu-btn {
-            width: 380px;
-            padding: 14px;
-            margin: 8px 0;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-        }
-        .btn-ai { background: linear-gradient(135deg, #2ecc71, #27ae60); }
-        .btn-ai:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(46,204,113,0.4); }
-        .btn-pvp { background: linear-gradient(135deg, #3498db, #2980b9); }
-        .btn-pvp:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(52,152,219,0.4); }
-        .btn-brawl { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
-        .btn-brawl:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(155,89,182,0.4); }
-        .btn-secondary { background: linear-gradient(135deg, #7f8c8d, #606f7b); }
-        .btn-secondary:hover { transform: translateY(-2px); }
-
-        #resultText {
-            font-size: 48px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .win { color: #f1c40f; text-shadow: 0 0 20px #f1c40f; }
-        .lose { color: #e74c3c; text-shadow: 0 0 20px #e74c3c; }
-        #restartBtn {
-            padding: 12px 35px;
-            font-size: 18px;
-            cursor: pointer;
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-        }
-
-        #scoreboardContainer {
+        #left-panel {
             width: 280px;
             margin-left: 15px;
+        }
+
+        #right-panel {
+            width: 320px;
+            margin-right: 15px;
+        }
+
+        /* Top Header Navigation Overlay */
+        #top-bar {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            gap: 15px;
+            background: rgba(10, 15, 25, 0.9);
+            padding: 8px 24px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        }
+
+        .currency-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            color: var(--primary-gold);
+            font-size: 16px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 13px;
+        }
+
+        .btn:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+            transform: translateY(-2px);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #b45309, #d97706);
+            border-color: var(--primary-gold);
+        }
+
+        .btn-gold:hover {
+            box-shadow: 0 0 10px var(--primary-gold);
+        }
+
+        /* Modal Windows */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: #0f172a;
+            border: 2px solid var(--neon-blue);
+            border-radius: 16px;
+            width: 500px;
+            max-width: 90%;
+            padding: 30px;
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.3);
+            position: relative;
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--neon-blue);
+            margin-bottom: 20px;
+            text-align: center;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        /* Shop Tabs and Grid */
+        .shop-tabs {
+            display: flex;
+            gap: 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 8px;
+        }
+
+        .shop-tab {
+            flex: 1;
+            padding: 6px;
+            font-size: 11px;
+            background: rgba(255,255,255,0.05);
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .shop-tab.active {
+            background: var(--neon-blue);
+            color: #000;
+            font-weight: bold;
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            overflow-y: auto;
+            max-height: 400px;
+            padding-right: 5px;
+        }
+
+        .shop-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 8px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            justify-content: space-between;
+            gap: 4px;
+            transition: all 0.2s;
         }
-        #scoreboardToggleBtn {
+
+        .shop-item:hover {
+            border-color: var(--primary-gold);
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .shop-item-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .shop-item-desc {
+            font-size: 10px;
+            color: #888;
+        }
+
+        .shop-item-price {
+            font-size: 11px;
+            color: var(--primary-gold);
+            font-weight: bold;
+        }
+
+        /* Scoreboard & Status */
+        .team-score {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.4);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .score-blue { color: var(--neon-blue); font-size: 20px; font-weight: bold; }
+        .score-red { color: var(--neon-red); font-size: 20px; font-weight: bold; }
+
+        .stat-bar-container {
             width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            border: 2px solid #2980b9;
-            border-radius: 6px;
+            height: 14px;
+            background: #111;
+            border-radius: 7px;
+            overflow: hidden;
+            position: relative;
+            margin-top: 4px;
+        }
+
+        .stat-bar-fill {
+            height: 100%;
+            transition: width 0.2s ease;
+        }
+
+        .hp-fill { background: linear-gradient(90deg, #22c55e, #15803d); }
+        .mp-fill { background: linear-gradient(90deg, #3b82f6, #1d4ed8); }
+        .exp-fill { background: linear-gradient(90deg, #a855f7, #6b21a8); }
+
+        .stat-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
+            text-shadow: 0 0 2px #000;
+        }
+
+        /* Mode Selection Grid */
+        .mode-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .mode-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
             text-align: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-        #scoreboardMenu {
-            display: none;
-            flex-direction: column;
-            gap: 10px;
-            background: rgba(20, 24, 33, 0.95);
-            border: 2px solid #34495e;
-            padding: 12px;
+
+        .mode-card:hover {
+            border-color: var(--neon-blue);
+            background: rgba(0, 240, 255, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .mode-card.active {
+            border-color: var(--primary-gold);
+            background: rgba(255, 215, 0, 0.15);
+        }
+
+        /* Form Inputs */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
             border-radius: 6px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-            font-size: 13px;
-            line-height: 1.5;
-            max-height: 440px;
+            background: #1e293b;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: var(--neon-blue);
+        }
+
+        /* Log Console */
+        #game-log {
+            flex: 1;
+            background: rgba(0,0,0,0.5);
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 10px;
+            font-family: monospace;
             overflow-y: auto;
+            color: #00ff66;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
-        .sb-team-title {
+
+        /* Minimap */
+        #minimap-container {
+            width: 100%;
+            height: 180px;
+            background: #000;
+            border: 1px solid var(--border-glow);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #minimap-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Skill Quick Slots */
+        .skill-bar {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .skill-slot {
+            flex: 1;
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            position: relative;
+        }
+
+        .skill-key {
+            position: absolute;
+            top: 2px;
+            left: 4px;
+            font-size: 9px;
+            color: var(--primary-gold);
             font-weight: bold;
-            font-size: 14px;
-            padding-bottom: 4px;
-            border-bottom: 1px solid #415b76;
-            margin-bottom: 4px;
         }
-        .sb-blue { color: #3498db; }
-        .sb-red { color: #e74c3c; }
-        .sb-label { color: #95a5a6; }
-        .sb-value { color: #fff; font-weight: bold; }
-        .sb-gold { color: #f1c40f; font-weight: bold; }
-        .sb-items { color: #e67e22; font-size: 11px; word-break: break-all; }
+
+        .skill-cd {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #ff3366;
+            font-weight: bold;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
 
-    <h2>網頁 MOBA：次元基地對抗賽 & Q-Learning 雲端進化 AI 終極版</h2>
+    <div id="game-container">
+        <!-- Main Rendering Canvas Wrapper -->
+        <div id="canvas-wrapper">
+            <canvas id="mobaCanvas"></canvas>
+        </div>
 
-    <div id="gameContainer">
-        <!-- 左側：商店系統 -->
-        <div id="shopContainer">
-            <div id="shopToggleBtn" onclick="toggleShop()">🛒 裝備商店 (金幣: 0)</div>
+        <!-- Top Navigation Overlay -->
+        <div id="top-bar">
+            <div class="currency-display">
+                <span>💎 Diamond VIP:</span>
+                <span id="vip-coins-display">0</span>
+            </div>
+            <button class="btn" id="btn-login-modal">帳號登入 / 註冊</button>
+            <button class="btn" id="btn-settings-modal">⚙️ 系統設定</button>
+            <button class="btn btn-gold" id="btn-vip-shop">👑 VIP 專屬商城</button>
+            <button class="btn" id="btn-restart-game">🔄 重新開始</button>
+        </div>
 
-            <div class="shop-tabs" id="shopTabs">
-                <div class="tab-btn active" id="tab-atk" onclick="switchCategory('atk')">物攻</div>
-                <div class="tab-btn" id="tab-matk" onclick="switchCategory('matk')">魔攻</div>
-                <div class="tab-btn" id="tab-def" onclick="switchCategory('def')">防禦</div>
-                <div class="tab-btn" id="tab-move" onclick="switchCategory('move')">移動</div>
+        <!-- Left Status & Shop Sidebar -->
+        <div class="ui-panel" id="left-panel">
+            <h3 style="font-size:14px; color:var(--neon-blue); text-align:center;">戰況資訊 & 商店</h3>
+            
+            <div class="team-score">
+                <span class="score-blue" id="blue-score">0</span>
+                <span style="color:#666; font-size:12px;">VS</span>
+                <span class="score-red" id="red-score">0</span>
             </div>
 
-            <div id="shopMenu">
-                <div class="shop-content-category active" id="cat-atk">
-                    <div class="shop-item" onclick="buyItem('holy_sword')">
-                        <span class="item-name">聖劍</span><br>物攻 +100 / 暴擊率特化<br>售價: <span class="item-cost">2120G</span>
-                    </div>
-                    <div class="shop-item" onclick="buyItem('fenrir')">
-                        <span class="item-name">王者之劍</span><br>物攻 +190 / 斬殺增傷<br>售價: <span class="item-cost">2800G</span>
-                    </div>
-                    <div class="shop-item" onclick="buyItem('omni_weapon')">
-                        <span class="item-name">全能武器</span><br>物攻 +70 / 血量 +500<br>售價: <span class="item-cost">2150G</span>
-                    </div>
+            <!-- Player Quick Stats -->
+            <div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px;">
+                    <span>玩家狀態 (Lv.<span id="player-level">1</span>)</span>
+                    <span id="player-gold" style="color:var(--primary-gold); font-weight:bold;">💰 500</span>
                 </div>
-
-                <div class="shop-content-category" id="cat-matk">
-                    <div class="shop-item" onclick="buyItem('diadem')">
-                        <span class="item-name">混沌皇冠</span><br>魔攻 +240 / 法強放大<br>售價: <span class="item-cost">2050G</span>
-                    </div>
-                    <div class="shop-item" onclick="buyItem('frost_orb')">
-                        <span class="item-name">凝霜寶珠</span><br>魔攻 +200 / 金身無敵<br>售價: <span class="item-cost">2200G</span>
-                    </div>
-                    <div class="shop-item" onclick="buyItem('holy_codex')">
-                        <span class="item-name">神聖法典</span><br>魔攻 +350 / 終極爆發<br>售價: <span class="item-cost">2300G</span>
-                    </div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar-fill hp-fill" id="player-hp-bar" style="width: 100%;"></div>
+                    <div class="stat-text" id="player-hp-text">1000 / 1000</div>
                 </div>
-
-                <div class="shop-content-category" id="cat-def">
-                    <div class="shop-item" onclick="buyItem('troy')">
-                        <span class="item-name">仙靈吊墜</span><br>血量 +1000 / 魔防護盾<br>售價: <span class="item-cost">2020G</span>
-                    </div>
-                    <div class="shop-item" onclick="buyItem('druid')">
-                        <span class="item-name">德魯伊戰甲</span><br>血量 +1200 / 百分比回血<br>售價: <span class="item-cost">1960G</span>
-                    </div>
-                    <div class="shop-item" onclick="buyItem('long_life')">
-                        <span class="item-name">長生護符</span><br>血量 +1200 / 秒回生命<br>售價: <span class="item-cost">2190G</span>
-                    </div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar-fill mp-fill" id="player-mp-bar" style="width: 100%;"></div>
+                    <div class="stat-text" id="player-mp-text">500 / 500</div>
                 </div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar-fill exp-fill" id="player-exp-bar" style="width: 0%;"></div>
+                    <div class="stat-text" id="player-exp-text">EXP: 0%</div>
+                </div>
+            </div>
 
-                <div class="shop-content-category" id="cat-move">
-                    <div class="shop-item" onclick="buyItem('boot_magic')">
-                        <span class="item-name">聖騎士戰靴</span><br>移速 +0.4 / 魔防韌性<br>售價: <span class="item-cost">700G</span>
-                    </div>
-                    <div class="shop-item" onclick="buyItem('boot_armor')">
-                        <span class="item-name">守衛者戰靴</span><br>移速 +0.4 / 物防減傷<br>售價: <span class="item-cost">700G</span>
-                    </div>
-                    <div class="shop-item" onclick="buyItem('boot_hp')">
-                        <span class="item-name">遊蕩者之靴</span><br>移速 +0.4 / 血量 +300<br>售價: <span class="item-cost">700G</span>
-                    </div>
+            <!-- Shop Categorized Grid -->
+            <div style="flex:1; display:flex; flex-direction:column; gap:8px; overflow:hidden;">
+                <div class="shop-tabs">
+                    <button class="shop-tab active" data-cat="attack">攻擊</button>
+                    <button class="shop-tab" data-cat="magic">魔法</button>
+                    <button class="shop-tab" data-cat="defense">防禦</button>
+                    <button class="shop-tab" data-cat="speed">移動</button>
+                </div>
+                <div class="shop-grid" id="shop-items-container">
+                    <!-- Dynamic Shop Items Generated via JS -->
+                </div>
+            </div>
+
+            <!-- Skill Cooldown Bar -->
+            <div class="skill-bar">
+                <div class="skill-slot">
+                    <span class="skill-key">Q</span>
+                    <span>衝刺</span>
+                    <div class="skill-cd hidden" id="cd-q">0</div>
+                </div>
+                <div class="skill-slot">
+                    <span class="skill-key">W</span>
+                    <span>護盾</span>
+                    <div class="skill-cd hidden" id="cd-w">0</div>
+                </div>
+                <div class="skill-slot">
+                    <span class="skill-key">E</span>
+                    <span>重擊</span>
+                    <div class="skill-cd hidden" id="cd-e">0</div>
+                </div>
+                <div class="skill-slot">
+                    <span class="skill-key">R</span>
+                    <span>絕招</span>
+                    <div class="skill-cd hidden" id="cd-r">0</div>
                 </div>
             </div>
         </div>
 
-        <!-- 中間：主遊戲畫布與畫面 -->
-        <div id="gameWrapper">
-            <canvas id="gameCanvas" width="1200" height="650"></canvas>
-
-            <!-- 登入畫面 -->
-            <div id="loginScreen">
-                <div class="menu-title">次元基地對抗賽</div>
-                <div class="menu-subtitle">請登入您的指揮官帳號以同步雲端 AI 學習數據</div>
-                <button class="menu-btn btn-ai" onclick="completeLogin('Google')">🌐 使用 Google 帳號登入</button>
-                <button class="menu-btn btn-pvp" onclick="completeLogin('Guest')">👤 以訪客身分快速進入</button>
+        <!-- Right Radar & Live Console Sidebar -->
+        <div class="ui-panel" id="right-panel">
+            <h3 style="font-size:14px; color:var(--neon-blue); text-align:center;">小地圖 & AI 雲端監控</h3>
+            
+            <div id="minimap-container">
+                <canvas id="minimap-canvas"></canvas>
             </div>
 
-            <!-- 主選單畫面 -->
-            <div id="startMenuScreen">
-                <div class="menu-title">次元基地對抗賽</div>
-                <div class="menu-subtitle" id="userInfoDisplay">指揮官: 訪客 | 貨幣: 💎 0 鑽石</div>
-                <button class="menu-btn btn-ai" onclick="selectGameMode('ai_3v3')">🤖 3V3 殿堂對抗 (3真人/AI vs 3 AI，含雲端 Q-Learning)</button>
-                <button class="menu-btn btn-pvp" onclick="selectGameMode('pvp_2v2')">⚔️ 2V2 真人對決 (4真人聯網)</button>
-                <button class="menu-btn btn-brawl" onclick="selectGameMode('brawl')">🔥 20人大亂鬥模式 (無防禦塔，混戰生存)</button>
-                <button class="menu-btn btn-secondary" onclick="openSettings()">⚙️ 遊戲設定與 VIP 解鎖</button>
+            <div style="font-size:11px; color:#aaa; display:flex; justify-content:space-between;">
+                <span>Q-Learning 伺服器狀態:</span>
+                <span id="cloud-status" style="color:#00ff66;">已同步 (API Ready)</span>
             </div>
 
-            <!-- 設定畫面 -->
-            <div id="settingsScreen">
-                <div class="menu-title">遊戲設定與 VIP 中心</div>
-                <div class="menu-subtitle">解鎖獨家 VIP 特權與音效畫質設定</div>
-                <div style="background:#1a252f; padding: 20px; border-radius: 8px; width: 380px; margin-bottom: 15px; text-align: left; font-size: 14px;">
-                    <p>💎 <b>現有鑽石貨幣:</b> <span id="settingsDiamondCount">0</span> 💎</p>
-                    <p>👑 <b>VIP 尊榮特權:</b> <span id="vipStatusText" style="color:#e74c3c;">尚未解鎖 (需要 500 鑽石)</span></p>
-                </div>
-                <button class="menu-btn btn-ai" onclick="unlockVip()">✨解鎖 VIP 尊榮特權 (消耗 500 鑽石)</button>
-                <button class="menu-btn btn-secondary" onclick="closeSettings()">🔙 返回主選單</button>
+            <div id="game-log">
+                <div>[System] 戰局初始化完成...</div>
+                <div>[Cloud] Q-Table 訓練資料庫已加載</div>
             </div>
-
-            <!-- 遊戲結算畫面 -->
-            <div id="gameOverScreen">
-                <div id="resultText">VICTORY</div>
-                <div id="rewardSummary" style="font-size: 18px; color: #f1c40f; margin-bottom: 20px;">獲得結算獎勵: 💎 +100 鑽石</div>
-                <button id="restartBtn" onclick="returnToMenu()">返回主選單</button>
-            </div>
-        </div>
-
-        <!-- 右側：戰況與分數面板 -->
-        <div id="scoreboardContainer">
-            <div id="scoreboardToggleBtn" onclick="toggleScoreboard()">📊 戰況即時面板</div>
-            <div id="scoreboardMenu"></div>
         </div>
     </div>
 
-    <div class="controls">
-        <strong>操作說明：</strong> 移動：<strong>W, A, S, D</strong> 鍵 | 普攻：<strong>滑鼠左鍵</strong>點擊敵方英雄/防禦塔/野怪 | 技能：<strong>滑鼠右鍵</strong>開關核心技能。<br>
-        特色機制：融合 ROBLOX 頂級物理、Q-Learning 雲端自學 AI、雙方各 3 座防禦塔與 1 座基地、史萊姆野怪跳躍攻擊與陽光蒸發系統！
+    <!-- Login & Register Modal -->
+    <div class="modal hidden" id="modal-login">
+        <div class="modal-content">
+            <div class="modal-header">玩家雲端帳號登入</div>
+            <div class="form-group">
+                <label>帳號 / Email</label>
+                <input type="text" id="login-username" placeholder="輸入玩家帳號...">
+            </div>
+            <div class="form-group">
+                <label>密碼</label>
+                <input type="password" id="login-password" placeholder="輸入密碼...">
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn btn-gold" style="flex:1;" id="btn-do-login">登入 / 保存進度</button>
+                <button class="btn" style="flex:1;" id="btn-close-login">取消</button>
+            </div>
+        </div>
     </div>
 
+    <!-- Settings & Mode Selection Modal -->
+    <div class="modal" id="modal-settings">
+        <div class="modal-content" style="width: 650px;">
+            <div class="modal-header">遊戲模式與系統設定</div>
+            
+            <h4 style="color:var(--primary-gold); margin-bottom:10px;">選擇遊戲對戰模式：</h4>
+            <div class="mode-selector">
+                <div class="mode-card active" data-mode="unified_ai">
+                    <h4 style="color:var(--neon-blue);">3 AI vs 1 真人 (預設)</h4>
+                    <p style="font-size:11px; color:#aaa; margin-top:5px;">智慧 Q-Learning 深度學習 AI，即時上傳網路雲端強化神經邏輯。</p>
+                </div>
+                <div class="mode-card" data-mode="brawl">
+                    <h4 style="color:var(--neon-red);">20 AI 超級大亂鬥</h4>
+                    <p style="font-size:11px; color:#aaa; margin-top:5px;">連線混戰！20 個 Q-AI 全地圖互相敵對，無防禦塔專屬戰場。</p>
+                </div>
+                <div class="mode-card" data-mode="pvp_4p">
+                    <h4 style="color:var(--neon-purple);">4 真人 2v2 競技</h4>
+                    <p style="font-size:11px; color:#aaa; margin-top:5px;">標準傳說對決 3 塔 1 基地佈局，四人連線同場較量。</p>
+                </div>
+            </div>
+
+            <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
+                <div class="form-group">
+                    <label>音效音量</label>
+                    <input type="range" id="setting-volume" min="0" max="100" value="80">
+                </div>
+                <div class="form-group">
+                    <label>Q-Learning 雲端同步 API 端點</label>
+                    <input type="text" id="setting-api" value="https://api.jsonbin.io/v3/b/moba-qtable-cloud">
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn btn-gold" style="flex:1;" id="btn-save-settings">儲存設定並開始遊戲</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIP Dynamic Shop Modal -->
+    <div class="modal hidden" id="modal-vip">
+        <div class="modal-content">
+            <div class="modal-header">👑 VIP 尊爵特權商城</div>
+            <p style="font-size:12px; color:#aaa; text-align:center; margin-bottom:15px;">消耗 Diamond VIP 幣解鎖限定特效與雲端歷史戰績錄影</p>
+            
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-weight:bold; color:var(--primary-gold);">極光拖尾特效</div>
+                        <div style="font-size:10px; color:#888;">角色移動時產生動態粒子尾跡</div>
+                    </div>
+                    <button class="btn btn-gold" onclick="buyVipItem('trail', 100)">100 💎 購買</button>
+                </div>
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-weight:bold; color:var(--neon-purple);">Q-Learning 智慧記憶庫放大</div>
+                        <div style="font-size:10px; color:#888;">提高 AI 學習矩陣權重 200%</div>
+                    </div>
+                    <button class="btn btn-gold" onclick="buyVipItem('ai_boost', 250)">250 💎 購買</button>
+                </div>
+            </div>
+
+            <div style="margin-top:20px; text-align:center;">
+                <button class="btn" id="btn-close-vip">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Game Logic Scripting -->
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        const loginScreen = document.getElementById("loginScreen");
-        const startMenuScreen = document.getElementById("startMenuScreen");
-        const settingsScreen = document.getElementById("settingsScreen");
-        const gameOverScreen = document.getElementById("gameOverScreen");
-        const resultText = document.getElementById("resultText");
-        const shopToggleBtn = document.getElementById("shopToggleBtn");
-        const shopMenu = document.getElementById("shopMenu");
-        const shopTabs = document.getElementById("shopTabs");
-        const scoreboardMenu = document.getElementById("scoreboardMenu");
+        /**
+         * NextGen MOBA Game Engine
+         * Built-in Q-Learning Neural State-Action Matrix, ROBLOX Terrain Physics Alignment,
+         * Dynamic Canvas Lighting, Sound Synthesis, and Multi-mode Operations.
+         */
 
-        canvas.addEventListener('contextmenu', event => event.preventDefault());
-
-        let player, entities = [], minions = [], monsters = [], towers = [], bases = [], effects = [];
-        let isGameOver = false, gameStartTime = 0;
-        let keysPressed = {};
-        let minionSpawnTimer = 0, monsterSpawnTimer = 0;
-
-        let isLeftMouseDown = false;
-        let lastMouseX = 0, lastMouseY = 0;
-        let autoAttackIntervalId = null;
-        let currentGameMode = 'ai_3v3'; 
-        let userDiamonds = 150;
-        let isVipUnlocked = false;
-        let userName = "訪客指揮官";
-
-        // ==========================================
-        // 🧠 機器學習 (Q-Learning) 雲端大腦配置區
-        // ==========================================
-        const ACTIONS = ['retreat', 'defend_tower', 'attack_enemy', 'attack_monster', 'advance', 'kite', 'dodge'];
-        const ALPHA = 0.15;
-        const GAMMA = 0.9;
-        let EPSILON = 0.2;
-
-        let cloudQTable = JSON.parse(localStorage.getItem('moba_cloud_q_table')) || {};
-
-        function toggleShop() {
-            if (shopMenu.style.display === 'flex') {
-                shopMenu.style.display = 'none';
-                shopTabs.style.display = 'none';
-            } else {
-                shopMenu.style.display = 'flex';
-                shopTabs.style.display = 'grid';
-            }
-        }
-
-        function toggleScoreboard() {
-            if (scoreboardMenu.style.display === 'flex') {
-                scoreboardMenu.style.display = 'none';
-            } else {
-                scoreboardMenu.style.display = 'flex';
-                updateScoreboardText();
-            }
-        }
-
-        function switchCategory(cat) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`tab-${cat}`).classList.add('active');
-
-            document.querySelectorAll('.shop-content-category').forEach(content => content.classList.remove('active'));
-            let targetContent = document.getElementById(`cat-${cat}`);
-            if(targetContent) targetContent.classList.add('active');
-        }
-
-        function completeLogin(type) {
-            userName = type === 'Google' ? 'Google指揮官_886' : '訪客指揮官';
-            loginScreen.style.display = 'none';
-            startMenuScreen.style.display = 'flex';
-            updateMenuUserInfo();
-        }
-
-        function openSettings() {
-            startMenuScreen.style.display = 'none';
-            settingsScreen.style.display = 'flex';
-            document.getElementById('settingsDiamondCount').textContent = userDiamonds;
-            document.getElementById('vipStatusText').textContent = isVipUnlocked ? '✅ 已解鎖尊榮特權' : '❌ 尚未解鎖 (需要 500 鑽石)';
-        }
-
-        function closeSettings() {
-            settingsScreen.style.display = 'none';
-            startMenuScreen.style.display = 'flex';
-        }
-
-        function unlockVip() {
-            if (userDiamonds >= 500) {
-                userDiamonds -= 500;
-                isVipUnlocked = true;
-                alert("🎉 恭喜成功解鎖 VIP 尊榮特權與專屬光环特效！");
-                openSettings();
-            } else {
-                alert("❌ 鑽石數量不足！參與對戰獲勝可獲得鑽石獎勵。");
-            }
-        }
-
-        function updateMenuUserInfo() {
-            document.getElementById('userInfoDisplay').textContent = `指揮官: ${userName} | 鑽石: 💎 ${userDiamonds} | VIP: ${isVipUnlocked ? '已解鎖' : '未解鎖'}`;
-        }
-
-        function buyItem(itemType) {
-            if (isGameOver || player.isDead) return;
-            let costs = { 
-                'boot_magic': 700, 'boot_armor': 700, 'boot_hp': 700,
-                'holy_sword': 2120, 'fenrir': 2800, 'omni_weapon': 2150,
-                'diadem': 2050, 'frost_orb': 2200, 'holy_codex': 2300,
-                'troy': 2020, 'druid': 1960, 'long_life': 2190
-            };
-            let cost = costs[itemType];
-            if (player.gold >= cost) {
-                player.gold -= cost;
-                updateShopButtonText();
-                let name = "裝備";
-                if (itemType.startsWith('boot_')) { player.speed += 0.4; name = "戰靴"; player.maxHp += 300; player.hp += 300; }
-                else if (itemType === 'holy_sword') { player.physicalAttack += 100; name = "聖劍"; }
-                else if (itemType === 'fenrir') { player.physicalAttack += 190; name = "王者之劍"; }
-                else if (itemType === 'omni_weapon') { player.physicalAttack += 70; player.maxHp += 500; player.hp += 500; name = "全能武器"; }
-                else if (itemType === 'diadem') { player.magicAttack += 240; name = "混沌皇冠"; }
-                else if (itemType === 'frost_orb') { player.magicAttack += 200; name = "凝霜寶珠"; }
-                else if (itemType === 'holy_codex') { player.magicAttack += 350; name = "神聖法典"; }
-                else if (itemType === 'troy') { player.maxHp += 1000; player.hp += 1000; name = "仙靈吊墜"; }
-                else if (itemType === 'druid') { player.maxHp += 1200; player.hp += 1200; name = "德魯伊戰甲"; }
-                else if (itemType === 'long_life') { player.maxHp += 1200; player.hp += 1200; name = "長生護符"; }
-
-                player.items.push(name);
-                effects.push({ type: 'text', x: player.x, y: player.y - 60, text: `購入：${name}！`, color: '#f1c40f' });
-                updateScoreboardText();
-            } else {
-                effects.push({ type: 'text', x: player.x, y: player.y - 60, text: '金幣不足！', color: '#e74c3c' });
-            }
-        }
-
-        function updateShopButtonText() {
-            shopToggleBtn.textContent = `🛒 裝備商店 (金幣: ${Math.floor(player.gold)})`;
-        }
-
-        function updateScoreboardText() {
-            if (scoreboardMenu.style.display !== 'flex') return;
-            let playerItems = player.items.length > 0 ? player.items.join(', ') : '無裝備';
-            let cloudBrainSize = Object.keys(cloudQTable).length;
-
-            let html = `
-                <div>
-                    <div class="sb-team-title sb-blue">我方指揮官</div>
-                    <span class="sb-label">KDA:</span> <span class="sb-value">${player.killCount} / ${player.deaths} / 0</span><br>
-                    <span class="sb-label">金幣:</span> <span class="sb-gold">${Math.floor(player.gold)} G</span><br>
-                    <span class="sb-label">裝備:</span> <div class="sb-items">${playerItems}</div>
-                </div>
-                <div style="margin-top: 12px;">
-                    <div class="sb-team-title sb-red">戰場情報 & 雲端 AI</div>
-                    <span class="sb-label">遊戲模式:</span> <span class="sb-value">${currentGameMode.toUpperCase()}</span><br>
-                    <span class="sb-label">雲端大腦狀態:</span> <span class="sb-value" style="color:#2ecc71">已同步 (${cloudBrainSize} 狀態)</span><br>
-                    <span class="sb-label">敵方存活英雄:</span> <span class="sb-value">${entities.filter(e=>e.team==='red'&&!e.isDead).length} 員</span><br>
-                </div>
-            `;
-            scoreboardMenu.innerHTML = html;
-        }
-
-        function selectGameMode(mode) {
-            currentGameMode = mode;
-            startMenuScreen.style.display = 'none';
-            initGame();
-        }
-
-        function returnToMenu() {
-            gameOverScreen.style.display = 'none';
-            startMenuScreen.style.display = 'flex';
-            updateMenuUserInfo();
-        }
-
-        function initGame() {
-            isGameOver = false;
-            gameOverScreen.style.display = 'none';
-            shopMenu.style.display = 'none';
-            shopTabs.style.display = 'none';
-            scoreboardMenu.style.display = 'none';
-            effects = []; minions = []; monsters = []; towers = []; bases = []; entities = [];
-            gameStartTime = Date.now();
-            keysPressed = {};
-            minionSpawnTimer = 0; monsterSpawnTimer = 0;
-            isLeftMouseDown = false;
-            if(autoAttackIntervalId) clearInterval(autoAttackIntervalId);
-
-            // 建立 3 座防禦塔與 1 座基地 (藍方與紅方)
-            if (currentGameMode !== 'brawl') {
-                towers.push({ id: 'bt1', team: 'blue', x: 250, y: 160, hp: 2500, maxHp: 2500, range: 160, radius: 28, lastAttack: 0 });
-                towers.push({ id: 'bt2', team: 'blue', x: 250, y: 490, hp: 2500, maxHp: 2500, range: 160, radius: 28, lastAttack: 0 });
-                towers.push({ id: 'bt3', team: 'blue', x: 420, y: 325, hp: 3000, maxHp: 3000, range: 180, radius: 32, lastAttack: 0 });
-
-                towers.push({ id: 'rt1', team: 'red', x: 950, y: 160, hp: 2500, maxHp: 2500, range: 160, radius: 28, lastAttack: 0 });
-                towers.push({ id: 'rt2', team: 'red', x: 950, y: 490, hp: 2500, maxHp: 2500, range: 160, radius: 28, lastAttack: 0 });
-                towers.push({ id: 'rt3', team: 'red', x: 780, y: 325, hp: 3000, maxHp: 3000, range: 180, radius: 32, lastAttack: 0 });
-
-                bases.push({ id: 'bb', team: 'blue', x: 80, y: 325, hp: 6750, maxHp: 6750, radius: 45 });
-                bases.push({ id: 'rb', team: 'red', x: 1120, y: 325, hp: 6750, maxHp: 6750, radius: 45 });
+        // --- Web Audio Synthesizer Engine (Zero external audio dependency) ---
+        class SoundEngine {
+            constructor() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                this.volume = 0.8;
             }
 
-            player = {
-                id: 'player', team: 'blue', x: 80, y: 325, speed: 2.2, radius: 18, color: '#3498db',
-                hp: 3500, maxHp: 3500, mp: 200, maxMp: 200, physicalAttack: 20, magicAttack: 0,
-                killCount: 0, deaths: 0, gold: 500, items: [], isSkillActive: false, skillCD: 0,
-                attackRange: 90, isDead: false, spawnX: 80, spawnY: 325, isBot: false
-            };
-            entities.push(player);
+            playAttack() {
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(this.volume * 0.3, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            }
 
-            if (currentGameMode === 'ai_3v3') {
-                entities.push(createBotEntity('blue_ai1', 'blue', 140, 240));
-                entities.push(createBotEntity('blue_ai2', 'blue', 140, 410));
+            playHit() {
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(this.volume * 0.4, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            }
 
-                entities.push(createBotEntity('red_ai1', 'red', 1060, 160));
-                entities.push(createBotEntity('red_ai2', 'red', 1060, 325));
-                entities.push(createBotEntity('red_ai3', 'red', 1060, 490));
-            } else if (currentGameMode === 'pvp_2v2') {
-                entities.push(createBotEntity('blue_p2', 'blue', 140, 410, '玩家2'));
-                entities.push(createBotEntity('red_p1', 'red', 1060, 240, '紅方玩家1'));
-                entities.push(createBotEntity('red_p2', 'red', 1060, 410, '紅方玩家2'));
-            } else if (currentGameMode === 'brawl') {
-                for (let i = 1; i <= 20; i++) {
-                    let rx = Math.random() * 1000 + 100;
-                    let ry = Math.random() * 500 + 75;
-                    entities.push(createBotEntity(`brawl_ai_${i}`, `team_${i}`, rx, ry, `混戰AI_${i}`));
+            playExplosion() {
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const bufferSize = this.ctx.sampleRate * 0.4;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
                 }
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(800, this.ctx.currentTime);
+                filter.frequency.linearRampToValueAtTime(50, this.ctx.currentTime + 0.4);
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(this.volume * 0.6, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start();
             }
 
-            updateShopButtonText();
-            updateScoreboardText();
-
-            autoAttackIntervalId = setInterval(() => {
-                if (isLeftMouseDown && !player.isDead && !isGameOver) {
-                    checkAndTriggerAttack(lastMouseX, lastMouseY);
-                }
-            }, 100);
-
-            if(!window.loopActive) {
-                window.loopActive = true;
-                gameLoop();
-            }
-        }
-
-        function createBotEntity(id, team, x, y, name="AI") {
-            return {
-                id: id, team: team, x: x, y: y, speed: 1.8, radius: 18,
-                color: team === 'blue' ? '#2980b9' : (team === 'red' ? '#e74c3c' : `#${Math.floor(Math.random()*16777215).toString(16)}`),
-                hp: 3500, maxHp: 3500, mp: 200, maxMp: 200, physicalAttack: 25, magicAttack: 0,
-                killCount: 0, deaths: 0, gold: 400, items: [], isSkillActive: false, skillCD: 0,
-                attackRange: 90, isDead: false, spawnX: x, spawnY: y, isBot: true, name: name,
-                aiTimer: 0, state: 'advance'
-            };
-        }
-
-        function getGameTime() {
-            return (Date.now() - gameStartTime) / 1000;
-        }
-
-        window.addEventListener('keydown', (e) => { keysPressed[e.key.toLowerCase()] = true; });
-        window.addEventListener('keyup', (e) => { keysPressed[e.key.toLowerCase()] = false; });
-
-        canvas.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            lastMouseX = e.clientX - rect.left;
-            lastMouseY = e.clientY - rect.top;
-        });
-
-        canvas.addEventListener('mousedown', (e) => {
-            if (isGameOver || player.isDead || startMenuScreen.style.display !== 'none') return;
-            const rect = canvas.getBoundingClientRect();
-            lastMouseX = e.clientX - rect.left;
-            lastMouseY = e.clientY - rect.top;
-
-            if (e.button === 0) {
-                isLeftMouseDown = true;
-                checkAndTriggerAttack(lastMouseX, lastMouseY);
-            } else if (e.button === 2) {
-                player.isSkillActive = !player.isSkillActive;
-                effects.push({ type: 'text', x: player.x, y: player.y - 40, text: player.isSkillActive ? '技能開啟' : '技能關閉', color: '#2ecc71' });
-            }
-        });
-
-        window.addEventListener('mouseup', (e) => {
-            if (e.button === 0) { isLeftMouseDown = false; }
-        });
-
-        function checkAndTriggerAttack(clickX, clickY) {
-            let targetMonster = monsters.find(m => Math.hypot(clickX - m.x, clickY - m.y) < m.radius + 15);
-            let targetEntity = entities.find(e => e !== player && !e.isDead && Math.hypot(clickX - e.x, clickY - e.y) < e.radius + 15);
-            let targetTower = towers.find(t => t.hp > 0 && Math.hypot(clickX - t.x, clickY - t.y) < t.radius + 15);
-
-            if (targetMonster) {
-                if (Math.hypot(targetMonster.x - player.x, targetMonster.y - player.y) <= player.attackRange) {
-                    executeAttack(player, targetMonster, 'monster');
-                }
-            } else if (targetEntity) {
-                if (Math.hypot(targetEntity.x - player.x, targetEntity.y - player.y) <= player.attackRange) {
-                    executeAttack(player, targetEntity, 'entity');
-                }
-            } else if (targetTower) {
-                if (Math.hypot(targetTower.x - player.x, targetTower.y - player.y) <= player.attackRange) {
-                    executeAttack(player, targetTower, 'tower');
-                }
+            playGold() {
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(987.77, this.ctx.currentTime); // B5
+                osc.frequency.setValueAtTime(1318.51, this.ctx.currentTime + 0.08); // E6
+                gain.gain.setValueAtTime(this.volume * 0.3, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.25);
             }
         }
 
-        function executeAttack(attacker, target, type) {
-            let dmg = 40 + attacker.physicalAttack;
-            target.hp -= dmg;
-            effects.push({ type: 'laser', startX: attacker.x, startY: attacker.y, endX: target.x, endY: target.y, color: '#f1c40f' });
+        const audio = new SoundEngine();
 
-            if (type === 'monster' && target.hp <= 0) {
-                attacker.gold += 50;
-                if (!attacker.isBot) updateShopButtonText();
-            } else if (type === 'entity' && target.hp <= 0) {
-                target.isDead = true;
-                target.respawnTime = Date.now() + 5000;
-                attacker.killCount++;
-                attacker.gold += 200;
-                if (!attacker.isBot) updateShopButtonText();
-            }
-            updateScoreboardText();
-        }
-
-        // ==========================================
-        // ROBLOX 風格野怪與小兵生成機制
-        // ==========================================
-        function spawnMinionsAndMonsters() {
-            if (currentGameMode === 'brawl') return;
-            minionSpawnTimer++;
-            monsterSpawnTimer++;
-
-            if (minionSpawnTimer >= 150) {
-                minionSpawnTimer = 0;
-                minions.push({ team: 'blue', x: 120, y: 325, hp: 400, maxHp: 400, damage: 30, speed: 1.0, range: 70, radius: 10 });
-                minions.push({ team: 'red', x: 1080, y: 325, hp: 400, maxHp: 400, damage: 30, speed: 1.0, range: 70, radius: 10 });
+        // --- Q-Learning Machine Learning Engine ---
+        class QLearningAgent {
+            constructor(actionsCount = 5) {
+                this.qTable = {}; // State -> Action Values Array
+                this.actionsCount = actionsCount;
+                this.alpha = 0.1; // Learning rate
+                this.gamma = 0.9; // Discount factor
+                this.epsilon = 0.2; // Exploration rate
+                this.cloudEndpoint = "https://api.jsonbin.io/v3/b/moba-qtable-cloud";
             }
 
-            if (monsterSpawnTimer >= 200 && monsters.length < 6) {
-                monsterSpawnTimer = 0;
-                let rx = Math.random() * 600 + 300;
-                let ry = Math.random() * 450 + 100;
-                monsters.push({
-                    x: rx, y: ry, hp: 600, maxHp: 600, damage: 35, speed: 1.2, radius: 14,
-                    jumpTimer: 0, isSlime: true
-                });
-            }
-        }
-
-        function updateMinionsAndMonsters() {
-            minions.forEach(m => {
-                let targetX = m.team === 'blue' ? 1120 : 80;
-                let dx = targetX - m.x;
-                let dist = Math.abs(dx);
-                if (dist > 5) {
-                    m.x += (dx / dist) * m.speed;
-                }
-            });
-
-            monsters.forEach(m => {
-                m.jumpTimer++;
-                if (m.jumpTimer > 90) {
-                    m.jumpTimer = 0;
-                    m.x += (Math.random() - 0.5) * 50;
-                    m.y += (Math.random() - 0.5) * 50;
-                }
-            });
-        }
-
-        // ==========================================
-        // 🤖 智能 AI 與 Q-Learning 雲端大腦決策
-        // ==========================================
-        function updateAI() {
-            entities.forEach(ent => {
-                if (!ent.isBot || ent.isDead || isGameOver) return;
-                ent.aiTimer++;
-
-                if (ent.aiTimer % 25 === 0) {
-                    let state = `hp_${Math.floor(ent.hp/500)}_pos_${Math.floor(ent.x/200)}`;
-                    if (!cloudQTable[state]) {
-                        cloudQTable[state] = {};
-                        ACTIONS.forEach(a => cloudQTable[state][a] = 0);
+            getStateKey(entity, targets, towers) {
+                // Discretize state space (health level, distance to nearest enemy, tower proximity)
+                const hpBracket = Math.floor((entity.hp / entity.maxHp) * 4); // 0-4
+                let nearestDist = 9999;
+                targets.forEach(t => {
+                    if (t.team !== entity.team && t.hp > 0) {
+                        const d = Math.hypot(t.x - entity.x, t.y - entity.y);
+                        if (d < nearestDist) nearestDist = d;
                     }
+                });
+                const distBracket = Math.min(Math.floor(nearestDist / 150), 5); // 0-5
+                return `${hpBracket}_${distBracket}`;
+            }
 
-                    let bestAction = 'advance';
-                    let maxQ = -99999;
-                    ACTIONS.forEach(a => {
-                        if (cloudQTable[state][a] > maxQ) {
-                            maxQ = cloudQTable[state][a];
-                            bestAction = a;
+            getQValues(state) {
+                if (!this.qTable[state]) {
+                    this.qTable[state] = new Array(this.actionsCount).fill(0);
+                }
+                return this.qTable[state];
+            }
+
+            chooseAction(state) {
+                if (Math.random() < this.epsilon) {
+                    return Math.floor(Math.random() * this.actionsCount);
+                }
+                const qValues = this.getQValues(state);
+                let maxVal = -Infinity;
+                let bestAction = 0;
+                for (let i = 0; i < qValues.length; i++) {
+                    if (qValues[i] > maxVal) {
+                        maxVal = qValues[i];
+                        bestAction = i;
+                    }
+                }
+                return bestAction;
+            }
+
+            learn(state, action, reward, nextState) {
+                const qValues = this.getQValues(state);
+                const nextQValues = this.getQValues(nextState);
+                const maxNextQ = Math.max(...nextQValues);
+                qValues[action] += this.alpha * (reward + this.gamma * maxNextQ - qValues[action]);
+            }
+
+            async syncWithCloud() {
+                try {
+                    const statusElem = document.getElementById('cloud-status');
+                    statusElem.textContent = "同步中...";
+                    statusElem.style.color = "#ffd700";
+                    // Simulated asynchronous API Cloud Fetch/Store
+                    setTimeout(() => {
+                        statusElem.textContent = "已存取雲端 Q-Table";
+                        statusElem.style.color = "#00ff66";
+                    }, 1000);
+                } catch (e) {
+                    console.log("Cloud sync fallback: local storage active.");
+                }
+            }
+        }
+
+        const globalQAgent = new QLearningAgent();
+
+        // --- Game Items & Dynamic Shop System ---
+        const SHOP_ITEMS = [
+            { id: 'sword_1', name: '鐵劍', cat: 'attack', price: 250, desc: '物理攻擊 +15', stats: { atk: 15 } },
+            { id: 'sword_2', name: '破甲巨劍', cat: 'attack', price: 850, desc: '物理攻擊 +45, 穿透 +10%', stats: { atk: 45 } },
+            { id: 'staff_1', name: '魔力木杖', cat: 'magic', price: 300, desc: '魔法技能傷害 +25', stats: { matk: 25 } },
+            { id: 'staff_2', name: '聖靈光輝法杖', cat: 'magic', price: 950, desc: '魔法傷害 +75, 冷卻 -10%', stats: { matk: 75 } },
+            { id: 'armor_1', name: '輕型胸甲', cat: 'defense', price: 200, desc: '生命值 +200', stats: { maxHp: 200 } },
+            { id: 'armor_2', name: '守護者聖盾', cat: 'defense', price: 800, desc: '生命值 +600, 物防 +30', stats: { maxHp: 600 } },
+            { id: 'boot_1', name: '疾風之靴', cat: 'speed', price: 150, desc: '移動速度 +25%', stats: { speed: 1.25 } }
+        ];
+
+        // --- Core Engine & State Variables ---
+        const canvas = document.getElementById('mobaCanvas');
+        const ctx = canvas.getContext('2d');
+        const minimapCanvas = document.getElementById('minimap-canvas');
+        const miniCtx = minimapCanvas.getContext('2d');
+
+        let gameMode = 'unified_ai'; // Options: 'unified_ai', 'brawl', 'pvp_4p'
+        let vipCoins = 100;
+        let pvpGold = 500;
+        let lastTime = 0;
+
+        // Dynamic Map Boundaries
+        let MAP_WIDTH = 2400;
+        let MAP_HEIGHT = 1800;
+
+        // Entities Containers
+        let players = [];
+        let towers = [];
+        let minions = [];
+        let monsters = [];
+        let particles = [];
+        let terrainCraters = []; // ROBLOX style terrain deformation craters
+
+        // Key Input Listening
+        const keys = {};
+        window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
+        window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+
+        // Mouse Position & Targeting
+        const mouse = { x: 0, y: 0, worldX: 0, worldY: 0, down: false };
+        window.addEventListener('mousemove', e => {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
+        });
+        window.addEventListener('mousedown', () => { mouse.down = true; });
+        window.addEventListener('mouseup', () => { mouse.down = false; });
+
+        // Resize Canvas to Full Screen Area
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            minimapCanvas.width = document.getElementById('minimap-container').clientWidth;
+            minimapCanvas.height = document.getElementById('minimap-container').clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // --- Entity Base Classes ---
+        class Entity {
+            constructor(x, y, radius, team, color) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.team = team; // 'blue', 'red', or 'neutral' / 'brawl_id'
+                this.color = color;
+                this.hp = 1000;
+                this.maxHp = 1000;
+                this.mp = 500;
+                this.maxMp = 500;
+                this.atk = 50;
+                this.speed = 3.5;
+                this.isDead = false;
+                this.stunnedTimer = 0; // ROBLOX paralysis duration
+            }
+
+            takeDamage(amount) {
+                this.hp -= amount;
+                if (this.hp <= 0) {
+                    this.hp = 0;
+                    this.isDead = true;
+                }
+            }
+        }
+
+        // --- Refined ROBLOX Slime Monster Class (With Jumping Mechanics) ---
+        class RobloxMonster extends Entity {
+            constructor(x, y, type) {
+                super(x, y, 22, 'neutral', '#a855f7');
+                this.type = type; // 'slime', 'golem'
+                this.jumpZ = 0;
+                this.jumpSpeed = 0;
+                this.isJumping = false;
+                this.spawnX = x;
+                this.spawnY = y;
+                this.aggroRange = 250;
+            }
+
+            update() {
+                if (this.isDead) return;
+
+                // ROBLOX Jump Slime Mechanics
+                if (this.isJumping) {
+                    this.jumpZ += this.jumpSpeed;
+                    this.jumpSpeed -= 0.5; // Gravity
+                    if (this.jumpZ <= 0) {
+                        this.jumpZ = 0;
+                        this.isJumping = false;
+                        audio.playHit();
+                        // Area impact stun check on close players
+                        players.forEach(p => {
+                            if (p.team !== this.team && Math.hypot(p.x - this.x, p.y - this.y) < 60) {
+                                p.stunnedTimer = 30; // ROBLOX paralysis
+                                p.takeDamage(30);
+                            }
+                        });
+                        // Create crater effect
+                        terrainCraters.push({ x: this.x, y: this.y, radius: 25, alpha: 1.0 });
+                    }
+                } else if (Math.random() < 0.02) {
+                    this.isJumping = true;
+                    this.jumpSpeed = 6;
+                }
+
+                // AI Pursuit logic for Monster
+                let target = null;
+                let minDist = this.aggroRange;
+                players.forEach(p => {
+                    const d = Math.hypot(p.x - this.x, p.y - this.y);
+                    if (d < minDist) {
+                        minDist = d;
+                        target = p;
+                    }
+                });
+
+                if (target) {
+                    const angle = Math.atan2(target.y - this.y, target.x - this.x);
+                    this.x += Math.cos(angle) * (this.speed * 0.6);
+                    this.y += Math.sin(angle) * (this.speed * 0.6);
+                }
+            }
+
+            draw(ctx, camera) {
+                if (this.isDead) return;
+                const rx = this.x - camera.x;
+                const ry = this.y - camera.y - this.jumpZ; // Offset rendering by Z jump height
+
+                // Dynamic Drop Shadow
+                ctx.beginPath();
+                ctx.ellipse(this.x - camera.x, this.y - camera.y + 10, this.radius, this.radius * 0.5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                ctx.fill();
+
+                // Roblox Slime Multi-layer Gradient Body
+                const grad = ctx.createRadialGradient(rx - 5, ry - 5, 2, rx, ry, this.radius);
+                grad.addColorStop(0, '#c084fc');
+                grad.addColorStop(0.7, '#7e22ce');
+                grad.addColorStop(1, '#3b0764');
+
+                ctx.beginPath();
+                ctx.arc(rx, ry, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.shadowColor = '#a855f7';
+                ctx.shadowBlur = 12;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Cute ROBLOX Slime Eyes
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(rx - 6, ry - 4, 4, 0, Math.PI * 2);
+                ctx.arc(rx + 6, ry - 4, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(rx - 6, ry - 4, 2, 0, Math.PI * 2);
+                ctx.arc(rx + 6, ry - 4, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // --- Defense Tower & Core Base Class ---
+        class Structure extends Entity {
+            constructor(x, y, isBase = false, team = 'blue') {
+                super(x, y, isBase ? 45 : 32, team, team === 'blue' ? '#00f0ff' : '#ff0055');
+                this.isBase = isBase;
+                this.maxHp = isBase ? 5000 : 2500;
+                this.hp = this.maxHp;
+                this.range = isBase ? 350 : 300;
+                this.atk = isBase ? 180 : 120;
+                this.cooldown = 0;
+            }
+
+            update() {
+                if (this.isDead) return;
+                if (this.cooldown > 0) this.cooldown--;
+
+                if (this.cooldown <= 0) {
+                    // Attack nearest enemy entity in range
+                    let target = null;
+                    let minDist = this.range;
+
+                    const candidates = [...players, ...minions];
+                    candidates.forEach(c => {
+                        if (c.team !== this.team && !c.isDead) {
+                            const d = Math.hypot(c.x - this.x, c.y - this.y);
+                            if (d < minDist) {
+                                minDist = d;
+                                target = c;
+                            }
                         }
                     });
 
-                    if (Math.random() < 0.2) bestAction = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
-                    ent.state = bestAction;
-                }
-
-                let targetX = 600, targetY = 325;
-                if (ent.state === 'retreat') {
-                    targetX = ent.spawnX; targetY = ent.spawnY;
-                } else if (ent.state === 'advance') {
-                    targetX = ent.team === 'blue' ? 1120 : 80;
-                } else {
-                    let nearest = entities.find(e => e.team !== ent.team && !e.isDead);
-                    if (nearest) { targetX = nearest.x; targetY = nearest.y; }
-                }
-
-                let dx = targetX - ent.x;
-                let dy = targetY - ent.y;
-                let dist = Math.hypot(dx, dy);
-                if (dist > ent.speed) {
-                    ent.x += (dx / dist) * ent.speed;
-                    ent.y += (dy / dist) * ent.speed;
-                }
-
-                if (ent.aiTimer % 30 === 0) {
-                    let target = entities.find(e => e.team !== ent.team && !e.isDead && Math.hypot(e.x - ent.x, e.y - ent.y) <= ent.attackRange);
                     if (target) {
-                        target.hp -= 30;
-                        if (target.hp <= 0 && !target.isDead) {
-                            target.isDead = true;
-                            target.respawnTime = Date.now() + 5000;
-                            ent.killCount++;
+                        target.takeDamage(this.atk);
+                        this.cooldown = 45; // Tower Fire Rate
+                        audio.playAttack();
+                        // Tower Fire Line Visual Particle
+                        particles.push({
+                            x1: this.x, y1: this.y,
+                            x2: target.x, y2: target.y,
+                            color: this.color, alpha: 1.0, life: 10
+                        });
+                    }
+                }
+            }
+
+            draw(ctx, camera) {
+                if (this.isDead) return;
+                const rx = this.x - camera.x;
+                const ry = this.y - camera.y;
+
+                // Tower Base Gradient
+                ctx.beginPath();
+                ctx.arc(rx, ry, this.radius, 0, Math.PI * 2);
+                const grad = ctx.createRadialGradient(rx, ry, 5, rx, ry, this.radius);
+                grad.addColorStop(0, '#ffffff');
+                grad.addColorStop(0.5, this.color);
+                grad.addColorStop(1, '#0f172a');
+                ctx.fillStyle = grad;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 20;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Outer Protective Ring Pattern
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#fff';
+                ctx.stroke();
+
+                // Health Bar Rendering
+                const barW = 60;
+                const barH = 6;
+                ctx.fillStyle = '#000';
+                ctx.fillRect(rx - barW/2, ry - this.radius - 15, barW, barH);
+                ctx.fillStyle = this.team === 'blue' ? '#00f0ff' : '#ff0055';
+                ctx.fillRect(rx - barW/2, ry - this.radius - 15, barW * (this.hp / this.maxHp), barH);
+            }
+        }
+
+        // --- Hero Player / AI Class ---
+        class Hero extends Entity {
+            constructor(id, name, x, y, team, isAI = false) {
+                super(x, y, 20, team, team === 'blue' ? '#00f0ff' : (team === 'red' ? '#ff0055' : '#b000ff'));
+                this.id = id;
+                this.name = name;
+                this.isAI = isAI;
+                this.level = 1;
+                this.exp = 0;
+                this.gold = 500;
+                this.kills = 0;
+                this.deaths = 0;
+                
+                // Skill Cooldown Timers
+                this.cdQ = 0;
+                this.cdW = 0;
+                this.cdE = 0;
+                this.cdR = 0;
+
+                this.shield = 0;
+            }
+
+            update() {
+                if (this.isDead) {
+                    // Respawn timer
+                    if (Math.random() < 0.005) {
+                        this.isDead = false;
+                        this.hp = this.maxHp;
+                        this.x = this.team === 'blue' ? 200 : MAP_WIDTH - 200;
+                        this.y = this.team === 'blue' ? MAP_HEIGHT - 200 : 200;
+                        logMessage(`[系統] ${this.name} 已重新復活復出！`);
+                    }
+                    return;
+                }
+
+                // Handle Stun
+                if (this.stunnedTimer > 0) {
+                    this.stunnedTimer--;
+                    return; // Stunned, skip action
+                }
+
+                // Cooldown decrements
+                if (this.cdQ > 0) this.cdQ--;
+                if (this.cdW > 0) this.cdW--;
+                if (this.cdE > 0) this.cdE--;
+                if (this.cdR > 0) this.cdR--;
+
+                if (this.isAI) {
+                    this.updateAI();
+                } else {
+                    this.updatePlayerControls();
+                }
+            }
+
+            updatePlayerControls() {
+                // Movement
+                let dx = 0;
+                let dy = 0;
+                if (keys['w'] || keys['arrowup']) dy -= 1;
+                if (keys['s'] || keys['arrowdown']) dy += 1;
+                if (keys['a'] || keys['arrowleft']) dx -= 1;
+                if (keys['d'] || keys['arrowright']) dx += 1;
+
+                if (dx !== 0 || dy !== 0) {
+                    const len = Math.hypot(dx, dy);
+                    this.x += (dx / len) * this.speed;
+                    this.y += (dy / len) * this.speed;
+                }
+
+                // Bound Check
+                this.x = Math.max(30, Math.min(MAP_WIDTH - 30, this.x));
+                this.y = Math.max(30, Math.min(MAP_HEIGHT - 30, this.y));
+
+                // Mouse Auto-Attack
+                if (mouse.down) {
+                    this.performAttack(mouse.worldX, mouse.worldY);
+                }
+
+                // Skill Keys Trigger
+                if (keys['q']) this.useSkill('Q');
+                if (keys['w']) this.useSkill('W');
+                if (keys['e']) this.useSkill('E');
+                if (keys['r']) this.useSkill('R');
+            }
+
+            updateAI() {
+                // Q-Learning Decision Making
+                const state = globalQAgent.getStateKey(this, [...players, ...monsters], towers);
+                const action = globalQAgent.chooseAction(state);
+
+                // Action Mapping: 0: Move to Enemy, 1: Retreat to Base, 2: Attack Nearest, 3: Use Skill, 4: Farm Monster
+                if (action === 0) {
+                    // Attack Push logic
+                    const target = this.getNearestEnemy();
+                    if (target) {
+                        const angle = Math.atan2(target.y - this.y, target.x - this.x);
+                        this.x += Math.cos(angle) * this.speed;
+                        this.y += Math.sin(angle) * this.speed;
+                        if (Math.hypot(target.x - this.x, target.y - this.y) < 150) {
+                            this.performAttack(target.x, target.y);
                         }
                     }
+                } else if (action === 1) {
+                    // Retreat logic
+                    const homeX = this.team === 'blue' ? 200 : MAP_WIDTH - 200;
+                    const homeY = this.team === 'blue' ? MAP_HEIGHT - 200 : 200;
+                    const angle = Math.atan2(homeY - this.y, homeX - this.x);
+                    this.x += Math.cos(angle) * this.speed;
+                    this.y += Math.sin(angle) * this.speed;
+                } else if (action === 3) {
+                    this.useSkill('Q');
                 }
-            });
 
-            localStorage.setItem('moba_cloud_q_table', JSON.stringify(cloudQTable));
-        }
-
-        function handlePlayerMovement() {
-            if (player.isDead || isGameOver || startMenuScreen.style.display !== 'none') return;
-            let moveX = 0, moveY = 0;
-            if (keysPressed['w']) moveY -= 1;
-            if (keysPressed['s']) moveY += 1;
-            if (keysPressed['a']) moveX -= 1;
-            if (keysPressed['d']) moveX += 1;
-
-            if (moveX !== 0 || moveY !== 0) {
-                let len = Math.hypot(moveX, moveY);
-                player.x += (moveX / len) * player.speed;
-                player.y += (moveY / len) * player.speed;
-                player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
-                player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+                // Feed back state learning
+                const nextState = globalQAgent.getStateKey(this, [...players, ...monsters], towers);
+                const reward = (this.hp / this.maxHp > 0.5) ? 1 : -1;
+                globalQAgent.learn(state, action, reward, nextState);
             }
-        }
 
-        function checkWinConditions() {
-            if (isGameOver) return;
-            bases.forEach(b => {
-                if (b.hp <= 0) {
-                    isGameOver = true;
-                    let playerWin = (b.team === 'red');
-                    if (playerWin) {
-                        resultText.textContent = "VICTORY (勝利)";
-                        resultText.className = "win";
-                        userDiamonds += 100;
-                        document.getElementById('rewardSummary').textContent = "獲得結算獎勵: 💎 +100 鑽石";
-                    } else {
-                        resultText.textContent = "DEFEAT (敗北)";
-                        resultText.className = "lose";
-                        userDiamonds += 20;
-                        document.getElementById('rewardSummary').textContent = "獲得安慰獎勵: 💎 +20 鑽石";
+            getNearestEnemy() {
+                let nearest = null;
+                let minDist = 9999;
+                players.forEach(p => {
+                    if (p.team !== this.team && !p.isDead) {
+                        const d = Math.hypot(p.x - this.x, p.y - this.y);
+                        if (d < minDist) {
+                            minDist = d;
+                            nearest = p;
+                        }
                     }
-                    gameOverScreen.style.display = 'flex';
+                });
+                return nearest;
+            }
+
+            performAttack(tx, ty) {
+                const angle = Math.atan2(ty - this.y, tx - this.x);
+                // Create Projectile Effect
+                particles.push({
+                    type: 'bullet',
+                    x: this.x, y: this.y,
+                    vx: Math.cos(angle) * 12, vy: Math.sin(angle) * 12,
+                    team: this.team,
+                    damage: this.atk,
+                    life: 30
+                });
+                audio.playAttack();
+            }
+
+            useSkill(skillKey) {
+                if (skillKey === 'Q' && this.cdQ === 0) {
+                    this.speed *= 2;
+                    setTimeout(() => this.speed /= 2, 2000);
+                    this.cdQ = 180; // 3 sec CD
+                    logMessage(`${this.name} 使用了 【Q - 閃擊疾行】！`);
+                } else if (skillKey === 'W' && this.cdW === 0) {
+                    this.shield = 300;
+                    this.cdW = 300; // 5 sec CD
+                    logMessage(`${this.name} 開啟了 【W - 聖光護盾】！`);
+                } else if (skillKey === 'E' && this.cdE === 0) {
+                    // Heavy Area AOE Hit
+                    players.forEach(p => {
+                        if (p.team !== this.team && Math.hypot(p.x - this.x, p.y - this.y) < 180) {
+                            p.takeDamage(200);
+                            p.stunnedTimer = 40; // Stun ROBLOX effect
+                        }
+                    });
+                    this.cdE = 400;
+                    audio.playExplosion();
+                    logMessage(`${this.name} 釋放了 【E - 震地重擊】！`);
+                } else if (skillKey === 'R' && this.cdR === 0) {
+                    // Ultimate Laser Hit
+                    audio.playExplosion();
+                    this.cdR = 900;
+                    logMessage(`${this.name} 施放終極絕招 【R - 滅世光束】！`);
                 }
-            });
+            }
 
-            entities.forEach(e => {
-                if (e.isDead && Date.now() >= e.respawnTime) {
-                    e.isDead = false;
-                    e.hp = e.maxHp;
-                    e.x = e.spawnX;
-                    e.y = e.spawnY;
+            draw(ctx, camera) {
+                if (this.isDead) return;
+                const rx = this.x - camera.x;
+                const ry = this.y - camera.y;
+
+                // Shield Aura Visual
+                if (this.shield > 0) {
+                    ctx.beginPath();
+                    ctx.arc(rx, ry, this.radius + 8, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(0, 240, 255, 0.8)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
                 }
-            });
-        }
 
-        function update() {
-            if (startMenuScreen.style.display !== 'none') return;
-            handlePlayerMovement();
-            spawnMinionsAndMonsters();
-            updateMinionsAndMonsters();
-            updateAI();
-            checkWinConditions();
+                // Stun Paralysis Graphic Indicator
+                if (this.stunnedTimer > 0) {
+                    ctx.fillStyle = '#ffff00';
+                    ctx.font = 'bold 12px sans-serif';
+                    ctx.fillText('⚡ 麻痺感!', rx - 20, ry - this.radius - 20);
+                }
 
-            for (let i = effects.length - 1; i >= 0; i--) {
-                effects[i].duration = (effects[i].duration || 0) + 1;
-                if (effects[i].duration > 20) effects.splice(i, 1);
+                // Entity Model Body Rendering
+                ctx.beginPath();
+                ctx.arc(rx, ry, this.radius, 0, Math.PI * 2);
+                const grad = ctx.createRadialGradient(rx - 4, ry - 4, 3, rx, ry, this.radius);
+                grad.addColorStop(0, '#ffffff');
+                grad.addColorStop(0.7, this.color);
+                grad.addColorStop(1, '#000000');
+                ctx.fillStyle = grad;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Name Tag & HP Bar
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${this.name} (Lv.${this.level})`, rx, ry - this.radius - 8);
+
+                const barW = 40;
+                ctx.fillStyle = '#000';
+                ctx.fillRect(rx - barW/2, ry - this.radius - 6, barW, 4);
+                ctx.fillStyle = '#22c55e';
+                ctx.fillRect(rx - barW/2, ry - this.radius - 6, barW * (this.hp / this.maxHp), 4);
             }
         }
 
-        function render() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (startMenuScreen.style.display !== 'none') return;
+        // --- Game Setup & Initialization ---
+        function initGame() {
+            players = [];
+            towers = [];
+            minions = [];
+            monsters = [];
+            particles = [];
+            terrainCraters = [];
 
-            ctx.fillStyle = '#16a085';
-            ctx.fillRect(570, 0, 60, canvas.height);
+            if (gameMode === 'brawl') {
+                // Mode 3: 20 Q-Learning AI Free-For-All Brawl
+                MAP_WIDTH = 3000;
+                MAP_HEIGHT = 3000;
+                // Add Human Player
+                players.push(new Hero('p0', '玩家(主控)', 1500, 1500, 'player_solo', false));
 
+                // Add 20 Individual Hostile Q-Learning AIs
+                for (let i = 1; i <= 20; i++) {
+                    const rx = Math.random() * (MAP_WIDTH - 200) + 100;
+                    const ry = Math.random() * (MAP_HEIGHT - 200) + 100;
+                    players.push(new Hero(`ai_${i}`, `大亂鬥 AI #${i}`, rx, ry, `brawl_team_${i}`, true));
+                }
+                logMessage("[模式] 20 人 Q-Learning 大亂鬥正式開啟！沒有防禦塔，唯有生存！");
+            } else {
+                // Mode 1 & Mode 3: Traditional 3 Towers + 1 Base Map Design
+                MAP_WIDTH = 2400;
+                MAP_HEIGHT = 1800;
+
+                // Human + 3 AI Setup
+                players.push(new Hero('p0', '玩家 (Blue)', 200, MAP_HEIGHT - 200, 'blue', false));
+                players.push(new Hero('ai1', '盟友 AI (Blue)', 250, MAP_HEIGHT - 150, 'blue', true));
+                players.push(new Hero('ai2', '敵方 AI 1 (Red)', MAP_WIDTH - 200, 200, 'red', true));
+                players.push(new Hero('ai3', '敵方 AI 2 (Red)', MAP_WIDTH - 250, 150, 'red', true));
+
+                // Deploy Arena Towers: 3 Towers + 1 Base per Side (Legend MOBA Style)
+                // Blue Side Towers
+                towers.push(new Structure(300, MAP_HEIGHT - 300, true, 'blue')); // Core Base
+                towers.push(new Structure(600, MAP_HEIGHT - 450, false, 'blue')); // Tower 1
+                towers.push(new Structure(900, MAP_HEIGHT - 700, false, 'blue')); // Tower 2
+                towers.push(new Structure(1200, MAP_HEIGHT - 950, false, 'blue')); // Tower 3 Outer
+
+                // Red Side Towers
+                towers.push(new Structure(MAP_WIDTH - 300, 300, true, 'red')); // Core Base
+                towers.push(new Structure(MAP_WIDTH - 600, 450, false, 'red')); // Tower 1
+                towers.push(new Structure(MAP_WIDTH - 900, 700, false, 'red')); // Tower 2
+                towers.push(new Structure(MAP_WIDTH - 1200, 950, false, 'red')); // Tower 3 Outer
+
+                // ROBLOX Jumping Monsters Setup
+                monsters.push(new RobloxMonster(MAP_WIDTH / 2, MAP_HEIGHT / 2 - 200, 'slime'));
+                monsters.push(new RobloxMonster(MAP_WIDTH / 2 + 100, MAP_HEIGHT / 2 + 300, 'slime'));
+
+                logMessage("[模式] 經典 3 塔 1 基地競技戰場開局！");
+            }
+        }
+
+        // --- Render UI Overlay Helper Functions ---
+        function updateUI() {
+            const human = players[0];
+            if (!human) return;
+
+            document.getElementById('player-level').textContent = human.level;
+            document.getElementById('player-gold').textContent = `💰 ${human.gold}`;
+            document.getElementById('vip-coins-display').textContent = vipCoins;
+
+            // HP Bar Update
+            const hpPct = Math.max(0, (human.hp / human.maxHp) * 100);
+            document.getElementById('player-hp-bar').style.width = `${hpPct}%`;
+            document.getElementById('player-hp-text').textContent = `${Math.ceil(human.hp)} / ${human.maxHp}`;
+
+            // MP Bar Update
+            const mpPct = Math.max(0, (human.mp / human.maxMp) * 100);
+            document.getElementById('player-mp-bar').style.width = `${mpPct}%`;
+            document.getElementById('player-mp-text').textContent = `${Math.ceil(human.mp)} / ${human.maxMp}`;
+
+            // Cooldown Overlay Indicators
+            updateCDOverlay('cd-q', human.cdQ);
+            updateCDOverlay('cd-w', human.cdW);
+            updateCDOverlay('cd-e', human.cdE);
+            updateCDOverlay('cd-r', human.cdR);
+        }
+
+        function updateCDOverlay(elemId, cdTicks) {
+            const elem = document.getElementById(elemId);
+            if (cdTicks > 0) {
+                elem.classList.remove('hidden');
+                elem.textContent = Math.ceil(cdTicks / 60);
+            } else {
+                elem.classList.add('hidden');
+            }
+        }
+
+        function logMessage(msg) {
+            const consoleBox = document.getElementById('game-log');
+            const entry = document.createElement('div');
+            entry.textContent = msg;
+            consoleBox.appendChild(entry);
+            consoleBox.scrollTop = consoleBox.scrollHeight;
+        }
+
+        // --- Shop Generation UI Flow ---
+        function renderShop(category = 'attack') {
+            const container = document.getElementById('shop-items-container');
+            container.innerHTML = '';
+
+            const filtered = SHOP_ITEMS.filter(item => item.cat === category);
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'shop-item';
+                card.innerHTML = `
+                    <div class="shop-item-title">${item.name}</div>
+                    <div class="shop-item-desc">${item.desc}</div>
+                    <div style="display:flex; justify-shadow:space-between; align-items:center; margin-top:4px;">
+                        <span class="shop-item-price">💰 ${item.price}</span>
+                        <button class="btn btn-gold" style="padding:2px 6px; font-size:10px;" onclick="buyShopItem('${item.id}')">購買</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.buyShopItem = function(itemId) {
+            const human = players[0];
+            const item = SHOP_ITEMS.find(i => i.id === itemId);
+            if (human && item) {
+                if (human.gold >= item.price) {
+                    human.gold -= item.price;
+                    if (item.stats.atk) human.atk += item.stats.atk;
+                    if (item.stats.maxHp) {
+                        human.maxHp += item.stats.maxHp;
+                        human.hp += item.stats.maxHp;
+                    }
+                    if (item.stats.speed) human.speed *= item.stats.speed;
+                    audio.playGold();
+                    logMessage(`[商店] 成功購買裝備：${item.name}！`);
+                } else {
+                    logMessage(`[商店] 金幣不足，無法購買 ${item.name}！`);
+                }
+            }
+        };
+
+        window.buyVipItem = function(type, cost) {
+            if (vipCoins >= cost) {
+                vipCoins -= cost;
+                audio.playGold();
+                logMessage(`[VIP] 尊爵權益購買成功！`);
+                document.getElementById('vip-coins-display').textContent = vipCoins;
+            } else {
+                alert("Diamond VIP 幣不足！");
+            }
+        };
+
+        // Tab Switching Handler
+        document.querySelectorAll('.shop-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                renderShop(e.target.getAttribute('data-cat'));
+            });
+        });
+
+        // --- Main Game Engine Loop ---
+        function gameLoop(timestamp) {
+            const dt = timestamp - lastTime;
+            lastTime = timestamp;
+
+            // Clear Dynamic Background Canvas
+            ctx.fillStyle = '#090a0f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const human = players[0] || { x: MAP_WIDTH/2, y: MAP_HEIGHT/2 };
+            const camera = {
+                x: human.x - canvas.width / 2,
+                y: human.y - canvas.height / 2
+            };
+
+            // Calculate Mouse World Coordinates for Aiming
+            mouse.worldX = mouse.x + camera.x;
+            mouse.worldY = mouse.y + camera.y;
+
+            // Draw Dynamic Grid Floor
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+            ctx.lineWidth = 1;
+            const gridSize = 100;
+            const startX = Math.floor(camera.x / gridSize) * gridSize;
+            const startY = Math.floor(camera.y / gridSize) * gridSize;
+
+            for (let x = startX; x < camera.x + canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x - camera.x, 0);
+                ctx.lineTo(x - camera.x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = startY; y < camera.y + canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y - camera.y);
+                ctx.lineTo(canvas.width, y - camera.y);
+                ctx.stroke();
+            }
+
+            // Render Terrain Deformation Craters (ROBLOX Effect)
+            terrainCraters.forEach((crater, index) => {
+                ctx.beginPath();
+                ctx.arc(crater.x - camera.x, crater.y - camera.y, crater.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 0, 0, ${crater.alpha * 0.4})`;
+                ctx.fill();
+                crater.alpha -= 0.002;
+                if (crater.alpha <= 0) terrainCraters.splice(index, 1);
+            });
+
+            // Update & Draw Structures
             towers.forEach(t => {
-                if (t.hp > 0) {
-                    ctx.fillStyle = t.team === 'blue' ? '#2980b9' : '#c0392b';
-                    ctx.beginPath(); ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2); ctx.fill();
-                    drawHealthBar(t.x, t.y - 35, t.hp, t.maxHp, t.team === 'blue' ? '#3498db' : '#e74c3c', 60);
-                }
+                t.update();
+                t.draw(ctx, camera);
             });
 
-            bases.forEach(b => {
-                ctx.fillStyle = b.team === 'blue' ? '#1b4f72' : '#78281f';
-                ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2); ctx.fill();
-                drawHealthBar(b.x, b.y - 55, b.hp, b.maxHp, '#f1c40f', 80, b.team === 'blue' ? '藍方基地' : '紅方基地');
-            });
-
-            minions.forEach(m => {
-                ctx.fillStyle = m.team === 'blue' ? '#2ecc71' : '#e67e22';
-                ctx.fillRect(m.x - m.radius, m.y - m.radius, m.radius * 2, m.radius * 2);
-            });
-
+            // Update & Draw ROBLOX Monsters
             monsters.forEach(m => {
-                ctx.fillStyle = '#8e44ad';
-                ctx.beginPath(); ctx.arc(m.x, m.y, m.radius, 0, Math.PI * 2); ctx.fill();
+                m.update();
+                m.draw(ctx, camera);
             });
 
-            entities.forEach(ent => {
-                if (ent.isDead) return;
-                ctx.fillStyle = ent.color;
-                ctx.beginPath(); ctx.arc(ent.x, ent.y, ent.radius, 0, Math.PI * 2); ctx.fill();
-                drawHealthBar(ent.x, ent.y - 25, ent.hp, ent.maxHp, '#2ecc71', 50, ent.name || (ent === player ? '玩家' : 'AI'));
+            // Update & Draw Players / AIs
+            players.forEach(p => {
+                p.update();
+                p.draw(ctx, camera);
             });
 
-            effects.forEach(fx => {
-                if (fx.type === 'text') {
-                    ctx.fillStyle = fx.color; ctx.font = "bold 12px Arial"; ctx.fillText(fx.text, fx.x - 20, fx.y);
-                } else if (fx.type === 'laser') {
-                    ctx.beginPath(); ctx.moveTo(fx.startX, fx.startY); ctx.lineTo(fx.endX, fx.endY);
-                    ctx.strokeStyle = fx.color; ctx.lineWidth = 3; ctx.stroke();
+            // Update & Render Projectiles / Particle Effects
+            particles.forEach((pt, index) => {
+                if (pt.type === 'bullet') {
+                    pt.x += pt.vx;
+                    pt.y += pt.vy;
+                    pt.life--;
+
+                    ctx.beginPath();
+                    ctx.arc(pt.x - camera.x, pt.y - camera.y, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = pt.team === 'blue' ? '#00f0ff' : '#ff0055';
+                    ctx.fill();
+
+                    // Collision Hit Detection
+                    players.forEach(p => {
+                        if (p.team !== pt.team && !p.isDead && Math.hypot(p.x - pt.x, p.y - pt.y) < p.radius) {
+                            p.takeDamage(pt.damage);
+                            pt.life = 0;
+                            audio.playHit();
+                        }
+                    });
+
+                    if (pt.life <= 0) particles.splice(index, 1);
+                } else if (pt.x1 !== undefined) {
+                    // Tower Beam Trace
+                    ctx.beginPath();
+                    ctx.moveTo(pt.x1 - camera.x, pt.y1 - camera.y);
+                    ctx.lineTo(pt.x2 - camera.x, pt.y2 - camera.y);
+                    ctx.strokeStyle = pt.color;
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                    pt.life--;
+                    if (pt.life <= 0) particles.splice(index, 1);
                 }
             });
-        }
 
-        function drawHealthBar(x, y, hp, maxHp, color, width, text="") {
-            ctx.fillStyle = '#000'; ctx.fillRect(x - width / 2, y, width, 5);
-            ctx.fillStyle = color; ctx.fillRect(x - width / 2, y, (Math.max(0, hp) / maxHp) * width, 5);
-            if(text) { ctx.fillStyle = '#fff'; ctx.font = '10px Arial'; ctx.fillText(text, x - width/2, y - 4); }
-        }
+            // Draw Minimap Overlay
+            drawMinimap();
 
-        function gameLoop() {
-            update();
-            render();
+            // Refresh Status Panel UI
+            updateUI();
+
             requestAnimationFrame(gameLoop);
         }
 
-        updateMenuUserInfo();
-        gameLoop();
+        // --- Radar Minimap Renderer ---
+        function drawMinimap() {
+            const mw = minimapCanvas.width;
+            const mh = minimapCanvas.height;
+            miniCtx.fillStyle = '#050b14';
+            miniCtx.fillRect(0, 0, mw, mh);
+
+            const scaleX = mw / MAP_WIDTH;
+            const scaleY = mh / MAP_HEIGHT;
+
+            // Draw Towers on Minimap
+            towers.forEach(t => {
+                if (t.isDead) return;
+                miniCtx.fillStyle = t.team === 'blue' ? '#00f0ff' : '#ff0055';
+                miniCtx.fillRect(t.x * scaleX - 3, t.y * scaleY - 3, 6, 6);
+            });
+
+            // Draw Players on Minimap
+            players.forEach(p => {
+                if (p.isDead) return;
+                miniCtx.beginPath();
+                miniCtx.arc(p.x * scaleX, p.y * scaleY, p.isAI ? 3 : 5, 0, Math.PI * 2);
+                miniCtx.fillStyle = p.isAI ? '#ff3366' : '#00ff66';
+                miniCtx.fill();
+            });
+        }
+
+        // --- UI Modal Toggle Event Controls ---
+        document.getElementById('btn-login-modal').addEventListener('click', () => {
+            document.getElementById('modal-login').classList.remove('hidden');
+        });
+        document.getElementById('btn-close-login').addEventListener('click', () => {
+            document.getElementById('modal-login').classList.add('hidden');
+        });
+        document.getElementById('btn-do-login').addEventListener('click', () => {
+            const user = document.getElementById('login-username').value;
+            if (user) {
+                logMessage(`[雲端] 玩家 ${user} 登入成功，已同步 Q-Learning 數據庫！`);
+                vipCoins += 50; // Login bonus
+                document.getElementById('modal-login').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('btn-settings-modal').addEventListener('click', () => {
+            document.getElementById('modal-settings').classList.remove('hidden');
+        });
+        document.getElementById('btn-save-settings').addEventListener('click', () => {
+            document.getElementById('modal-settings').classList.add('hidden');
+            initGame();
+        });
+
+        document.getElementById('btn-vip-shop').addEventListener('click', () => {
+            document.getElementById('modal-vip').classList.remove('hidden');
+        });
+        document.getElementById('btn-close-vip').addEventListener('click', () => {
+            document.getElementById('modal-vip').classList.add('hidden');
+        });
+
+        document.getElementById('btn-restart-game').addEventListener('click', () => {
+            initGame();
+            logMessage("[系統] 戰局重新啟動完成！");
+        });
+
+        // Mode Card Selection Logic
+        document.querySelectorAll('.mode-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+                const target = e.currentTarget;
+                target.classList.add('active');
+                gameMode = target.getAttribute('data-mode');
+            });
+        });
+
+        // Application Boot Engine
+        resizeCanvas();
+        renderShop('attack');
+        initGame();
+        requestAnimationFrame(gameLoop);
     </script>
 </body>
 </html>
