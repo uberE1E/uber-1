@@ -1,1600 +1,1411 @@
-    * {
-        box-sizing: border-box;
-        user-select: none;
-        margin: 0;
-        padding: 0;
+    /* 視訊與遊戲主區域（全螢幕縮放） */
+    #gameWrapper {
+        position: relative;
+        flex: 1;
+        height: 100vh;
+        background-color: #05070a;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
     }
-
-    body, html {
+    canvas {
+        display: block;
         width: 100%;
         height: 100%;
-        overflow: hidden;
-        background-color: var(--dark-bg);
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: #ffffff;
+        background-color: #0e1710;
+        box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
     }
 
-    #game-container {
-        position: relative;
-        width: 100vw;
+    /* 兩側固定面板：左側商店與登入設定、右側戰況與計分 */
+    .sidebar {
+        width: 310px;
         height: 100vh;
+        background: linear-gradient(180deg, rgba(16, 22, 34, 0.98) 0%, rgba(8, 11, 18, 0.98) 100%);
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        padding: 12px;
+        gap: 10px;
+        z-index: 5;
+        box-shadow: 0 0 25px rgba(0,0,0,0.7);
+    }
+    #leftSidebar { border-right: 2px solid #2980b9; }
+    #rightSidebar { border-left: 2px solid #e74c3c; }
+
+    .panel-header {
+        font-size: 15px;
+        font-weight: bold;
+        color: #f39c12;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 8px 12px;
+        background: rgba(243, 156, 18, 0.15);
+        border-left: 4px solid #f39c12;
+        border-radius: 3px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: #000;
     }
 
-    /* Fullscreen Map Viewport Canvas */
-    #canvas-wrapper {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 1;
-    }
-
-    canvas {
-        width: 100%;
-        height: 100%;
-        display: block;
-    }
-
-    /* Glassmorphism Sidebars System */
-    .ui-panel {
-        position: relative;
-        z-index: 10;
-        height: 96vh;
-        background: var(--panel-bg);
-        border: 1px solid var(--border-glow);
-        backdrop-filter: blur(16px);
-        border-radius: 12px;
-        padding: 15px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        box-shadow: 0 0 30px rgba(0,0,0,0.9);
-        transition: transform 0.3s ease;
-    }
-
-    #left-panel {
-        width: 300px;
-        margin-left: 15px;
-    }
-
-    #right-panel {
-        width: 320px;
-        margin-right: 15px;
-    }
-
-    /* Top Central Command Overlay Bar */
-    #top-bar {
-        position: absolute;
-        top: 15px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 20;
-        display: flex;
-        gap: 12px;
-        background: rgba(10, 15, 25, 0.92);
-        padding: 8px 20px;
-        border-radius: 30px;
-        border: 1px solid rgba(255, 215, 0, 0.4);
-        box-shadow: 0 0 20px rgba(255, 215, 0, 0.25);
-    }
-
-    .currency-display {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: bold;
-        color: var(--primary-gold);
-        font-size: 14px;
-    }
-
+    /* 按鈕風格 */
     .btn {
-        background: linear-gradient(135deg, #1e293b, #0f172a);
-        color: #fff;
-        border: 1px solid rgba(255,255,255,0.25);
-        padding: 8px 14px;
-        border-radius: 6px;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: #ecf0f1;
+        border: 1px solid #5d6d7e;
+        padding: 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 13px;
         cursor: pointer;
-        font-weight: 600;
         transition: all 0.2s ease;
         text-align: center;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-size: 12px;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.4);
     }
-
     .btn:hover {
-        border-color: var(--neon-blue);
-        box-shadow: 0 0 12px var(--neon-blue);
-        transform: translateY(-2px);
+        background: linear-gradient(135deg, #34495e 0%, #415b76 100%);
+        border-color: #3498db;
+        color: #fff;
+        transform: translateY(-1px);
     }
-
+    .btn:active {
+        transform: translateY(1px);
+    }
     .btn-gold {
-        background: linear-gradient(135deg, #b45309, #d97706);
-        border-color: var(--primary-gold);
-    }
-
-    .btn-gold:hover {
-        box-shadow: 0 0 12px var(--primary-gold);
-    }
-
-    /* Dynamic Popups System (Modals) */
-    .modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.88);
-        backdrop-filter: blur(10px);
-        z-index: 100;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .modal.hidden {
-        display: none;
-    }
-
-    .modal-content {
-        background: #0f172a;
-        border: 2px solid var(--neon-blue);
-        border-radius: 16px;
-        width: 600px;
-        max-width: 95%;
-        padding: 25px;
-        box-shadow: 0 0 50px rgba(0, 240, 255, 0.4);
-        position: relative;
-    }
-
-    .modal-header {
-        font-size: 22px;
-        font-weight: bold;
-        color: var(--neon-blue);
-        margin-bottom: 15px;
-        text-align: center;
-        text-transform: uppercase;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        padding-bottom: 10px;
-    }
-
-    /* Integrated Equipment Shop System */
-    .shop-tabs {
-        display: flex;
-        gap: 5px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        padding-bottom: 8px;
-    }
-
-    .shop-tab {
-        flex: 1;
-        padding: 6px;
-        font-size: 11px;
-        background: rgba(255,255,255,0.05);
-        border: none;
-        color: #aaa;
-        cursor: pointer;
-        border-radius: 4px;
-        text-align: center;
-    }
-
-    .shop-tab.active {
-        background: var(--neon-blue);
+        background: linear-gradient(135deg, #f39c12 0%, #d35400 100%);
+        border-color: #f1c40f;
         color: #000;
+    }
+    .btn-gold:hover {
+        background: linear-gradient(135deg, #f1c40f 0%, #e67e22 100%);
+    }
+    .btn-danger {
+        background: linear-gradient(135deg, #c0392b 0%, #922b21 100%);
+        border-color: #e74c3c;
+    }
+
+    /* 商店頁籤與選單 */
+    .shop-tabs {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+    }
+    .tab-btn {
+        background: #1a252f;
+        color: #a6acaf;
+        border: 1px solid #2c3e50;
+        padding: 6px 0;
+        font-size: 11px;
+        cursor: pointer;
+        text-align: center;
+        border-radius: 3px;
         font-weight: bold;
     }
-
-    .shop-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-        overflow-y: auto;
-        max-height: 380px;
-        padding-right: 5px;
+    .tab-btn.active {
+        background: #e67e22;
+        color: #ffffff;
+        border-color: #d35400;
     }
 
-    .shop-item {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 6px;
-        padding: 8px;
+    .shop-list {
+        flex: 1;
+        overflow-y: auto;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-        gap: 4px;
-        transition: all 0.2s;
+        gap: 8px;
+        padding-right: 4px;
     }
-
-    .shop-item:hover {
-        border-color: var(--primary-gold);
-        background: rgba(255, 215, 0, 0.05);
-    }
-
-    .shop-item-title {
-        font-size: 12px;
-        font-weight: bold;
-        color: #fff;
-    }
-
-    .shop-item-desc {
-        font-size: 10px;
-        color: #888;
-    }
-
-    .shop-item-price {
+    .shop-item {
+        background: rgba(30, 42, 56, 0.9);
+        border: 1px solid #34495e;
+        padding: 8px 10px;
+        border-radius: 4px;
         font-size: 11px;
-        color: var(--primary-gold);
-        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
     }
-
-    /* Scoreboard & Player Stats Panel */
-    .team-score {
+    .shop-item:hover {
+        background: rgba(44, 62, 80, 0.95);
+        border-color: #f1c40f;
+    }
+    .item-head {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: rgba(0,0,0,0.5);
+    }
+    .item-name { font-weight: bold; color: #f39c12; font-size: 12px; }
+    .item-cost { color: #2ecc71; font-weight: bold; }
+    .item-desc { color: #bdc3c7; font-size: 10px; line-height: 1.3; }
+
+    /* 戰況顯示 */
+    .scoreboard-box {
+        background: rgba(20, 28, 40, 0.9);
+        border: 1px solid #2c3e50;
+        border-radius: 5px;
         padding: 10px;
-        border-radius: 8px;
-        border: 1px solid rgba(255,255,255,0.08);
+        font-size: 12px;
+        line-height: 1.5;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+        overflow-y: auto;
     }
-
-    .score-blue { color: var(--neon-blue); font-size: 20px; font-weight: bold; }
-    .score-red { color: var(--neon-red); font-size: 20px; font-weight: bold; }
-
-    .stat-bar-container {
-        width: 100%;
-        height: 14px;
-        background: #111;
-        border-radius: 7px;
-        overflow: hidden;
-        position: relative;
-        margin-top: 4px;
+    .team-title {
+        font-weight: bold;
+        font-size: 13px;
+        padding-bottom: 4px;
+        border-bottom: 2px solid;
+        display: flex;
+        justify-content: space-between;
     }
+    .team-blue { color: #3498db; border-color: #3498db; }
+    .team-red { color: #e74c3c; border-color: #e74c3c; }
+    .team-ffa { color: #9b59b6; border-color: #9b59b6; }
+    .stat-line { display: flex; justify-content: space-between; font-size: 11px; }
+    .stat-label { color: #7f8c8d; }
+    .stat-value { color: #ecf0f1; font-weight: bold; }
 
-    .stat-bar-fill {
-        height: 100%;
-        transition: width 0.2s ease;
-    }
-
-    .hp-fill { background: linear-gradient(90deg, #22c55e, #15803d); }
-    .mp-fill { background: linear-gradient(90deg, #3b82f6, #1d4ed8); }
-    .exp-fill { background: linear-gradient(90deg, #a855f7, #6b21a8); }
-
-    .stat-text {
+    /* 全螢幕覆蓋選單（登入 / 主選單 / 設定 / 結算） */
+    .overlay-screen {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        font-size: 9px;
+        background: rgba(7, 10, 15, 0.95);
+        backdrop-filter: blur(8px);
         display: flex;
-        align-items: center;
+        flex-direction: column;
         justify-content: center;
+        align-items: center;
+        z-index: 100;
+    }
+
+    .modal-box {
+        background: linear-gradient(145deg, #151d2a 0%, #0b1017 100%);
+        border: 2px solid #34495e;
+        border-radius: 12px;
+        padding: 30px;
+        width: 480px;
+        box-shadow: 0 0 40px rgba(0,0,0,0.8);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+    .modal-title {
+        font-size: 24px;
         font-weight: bold;
-        text-shadow: 0 0 3px #000;
-    }
-
-    /* Game Mode Chooser Grid */
-    .mode-selector {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        margin-top: 15px;
-    }
-
-    .mode-card {
-        background: rgba(255,255,255,0.04);
-        border: 2px solid rgba(255,255,255,0.1);
-        border-radius: 10px;
-        padding: 15px;
+        color: #f1c40f;
         text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
+        text-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
     }
 
-    .mode-card:hover {
-        border-color: var(--neon-blue);
-        background: rgba(0, 240, 255, 0.08);
-        transform: translateY(-3px);
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
     }
-
-    .mode-card.active {
-        border-color: var(--primary-gold);
-        background: rgba(255, 215, 0, 0.12);
+    .input-group label {
+        font-size: 12px;
+        color: #bdc3c7;
+        font-weight: bold;
     }
-
-    /* System Controls Layout */
-    .form-group {
-        margin-bottom: 12px;
-    }
-
-    .form-group label {
-        display: block;
-        font-size: 11px;
-        color: #aaa;
-        margin-bottom: 4px;
-    }
-
-    .form-group input {
-        width: 100%;
-        padding: 8px;
-        border-radius: 6px;
-        background: #1e293b;
-        border: 1px solid rgba(255,255,255,0.2);
+    .input-group input, .input-group select {
+        background: #090d14;
+        border: 1px solid #34495e;
         color: #fff;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 14px;
         outline: none;
     }
-
-    .form-group input:focus {
-        border-color: var(--neon-blue);
+    .input-group input:focus, .input-group select:focus {
+        border-color: #3498db;
     }
 
-    /* Live Neural Training Logs Console */
-    #game-log {
-        flex: 1;
-        background: rgba(0,0,0,0.6);
-        border-radius: 6px;
-        padding: 8px;
+    /* 自訂 Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0b1017; }
+    ::-webkit-scrollbar-thumb { background: #34495e; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #e67e22; }
+
+    .vip-badge {
+        background: linear-gradient(45deg, #f1c40f, #e67e22);
+        color: #000;
         font-size: 10px;
-        font-family: 'Courier New', Courier, monospace;
-        overflow-y: auto;
-        color: #00ff66;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    /* Radar Minimap Element */
-    #minimap-container {
-        width: 100%;
-        height: 180px;
-        background: #000;
-        border: 1px solid var(--border-glow);
-        border-radius: 8px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    #minimap-canvas {
-        width: 100%;
-        height: 100%;
-    }
-
-    /* Skill Bar Trigger Slots Overlay */
-    .skill-bar {
-        display: flex;
-        justify-content: space-between;
-        gap: 6px;
-        margin-top: 8px;
-    }
-
-    .skill-slot {
-        flex: 1;
-        height: 50px;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 6px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        font-size: 10px;
-        position: relative;
-    }
-
-    .skill-key {
-        position: absolute;
-        top: 2px;
-        left: 4px;
-        font-size: 9px;
-        color: var(--primary-gold);
         font-weight: bold;
-    }
-
-    .skill-cd {
-        position: absolute;
-        inset: 0;
-        background: rgba(0,0,0,0.75);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        color: #ff3366;
-        font-weight: bold;
-        border-radius: 5px;
+        padding: 2px 6px;
+        border-radius: 10px;
+        text-transform: uppercase;
     }
 </style>
 
 
-<div id="game-container">
-    <!-- Main Rendering Canvas -->
-    <div id="canvas-wrapper">
-        <canvas id="mobaCanvas"></canvas>
+<!-- 左側邊欄：個人資訊、商店與技能升級 -->
+<div class="sidebar" id="leftSidebar">
+    <div class="panel-header">
+        <span>玩家與商店</span>
+        <span id="playerCurrencyDisplay" style="color: #f1c40f; font-size: 13px;">🪙 0 | 💎 0</span>
     </div>
 
-    <!-- Central Dynamic Navigation Controls -->
-    <div id="top-bar">
-        <div class="currency-display">
-            <span>💎 VIP Diamond:</span>
-            <span id="vip-coins-display">100</span>
-        </div>
-        <button class="btn" id="btn-login-modal">🔑 帳號與雲端同步</button>
-        <button class="btn" id="btn-settings-modal">⚙️ 模式與系統設定</button>
-        <button class="btn btn-gold" id="btn-vip-shop">👑 VIP 特權商城</button>
-        <button class="btn" id="btn-restart-game">🔄 重新開局</button>
+    <button class="btn btn-gold" id="shopToggleBtn" onclick="toggleShopMenu()">商店 (金幣: 0 G)</button>
+
+    <div class="shop-tabs" id="shopTabs" style="display:none;">
+        <div class="tab-btn active" id="tab-atk" onclick="switchShopCategory('atk')">物攻</div>
+        <div class="tab-btn" id="tab-matk" onclick="switchShopCategory('matk')">魔攻</div>
+        <div class="tab-btn" id="tab-def" onclick="switchShopCategory('def')">防禦</div>
+        <div class="tab-btn" id="tab-move" onclick="switchShopCategory('move')">移動</div>
     </div>
 
-    <!-- Left Interface: Combat Status & Dynamic Equipment Shop -->
-    <div class="ui-panel" id="left-panel">
-        <h3 style="font-size:13px; color:var(--neon-blue); text-align:center;">即時戰況與裝備商店</h3>
-        
-        <div class="team-score">
-            <span class="score-blue" id="blue-score">0</span>
-            <span style="color:#666; font-size:11px;">VS</span>
-            <span class="score-red" id="red-score">0</span>
-        </div>
+    <div class="shop-list" id="shopList" style="display:none;">
+        <!-- 動態注入裝備 -->
+    </div>
 
-        <!-- Main Player Attribute Progress -->
-        <div>
-            <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px;">
-                <span>玩家狀態 (Lv.<span id="player-level">1</span>)</span>
-                <span id="player-gold" style="color:var(--primary-gold); font-weight:bold;">💰 500</span>
-            </div>
-            <div class="stat-bar-container">
-                <div class="stat-bar-fill hp-fill" id="player-hp-bar" style="width: 100%;"></div>
-                <div class="stat-text" id="player-hp-text">1000 / 1000</div>
-            </div>
-            <div class="stat-bar-container">
-                <div class="stat-bar-fill mp-fill" id="player-mp-bar" style="width: 100%;"></div>
-                <div class="stat-text" id="player-mp-text">500 / 500</div>
-            </div>
-            <div class="stat-bar-container">
-                <div class="stat-bar-fill exp-fill" id="player-exp-bar" style="width: 0%;"></div>
-                <div class="stat-text" id="player-exp-text">EXP: 0%</div>
-            </div>
-        </div>
+    <div class="panel-header" style="margin-top: 5px;">技能與屬性升級</div>
+    <div class="shop-list" id="skillUpgradeList">
+        <!-- 動態注入技能升級列表 -->
+    </div>
+</div>
 
-        <!-- Categorized Equipment Store -->
-        <div style="flex:1; display:flex; flex-direction:column; gap:6px; overflow:hidden;">
-            <div class="shop-tabs">
-                <button class="shop-tab active" data-cat="attack">攻擊</button>
-                <button class="shop-tab" data-cat="magic">魔法</button>
-                <button class="shop-tab" data-cat="defense">防禦</button>
-                <button class="shop-tab" data-cat="speed">移動</button>
-            </div>
-            <div class="shop-grid" id="shop-items-container">
-                <!-- Dynamic Shop Items Generated via JS Engine -->
-            </div>
-        </div>
+<!-- 中間全螢幕 Canvas 遊戲主區域 -->
+<div id="gameWrapper">
+    <canvas id="gameCanvas"></canvas>
 
-        <!-- Hero Active Skills Dashboard -->
-        <div class="skill-bar">
-            <div class="skill-slot">
-                <span class="skill-key">Q</span>
-                <span>閃擊疾行</span>
-                <div class="skill-cd hidden" id="cd-q">0</div>
+    <!-- 1. 登入面板 -->
+    <div class="overlay-screen" id="loginScreen">
+        <div class="modal-box">
+            <div class="modal-title">神魔對決：全網 Q-LEARNING 連線版</div>
+            <div class="input-group">
+                <label>玩家帳號 / 暱稱</label>
+                <input type="text" id="loginUsername" placeholder="輸入玩家名稱..." value="試煉勇士">
             </div>
-            <div class="skill-slot">
-                <span class="skill-key">W</span>
-                <span>聖光護盾</span>
-                <div class="skill-cd hidden" id="cd-w">0</div>
+            <div class="input-group">
+                <label>密碼 (雲端儲存驗證)</label>
+                <input type="password" id="loginPassword" value="123456">
             </div>
-            <div class="skill-slot">
-                <span class="skill-key">E</span>
-                <span>震地重擊</span>
-                <div class="skill-cd hidden" id="cd-e">0</div>
-            </div>
-            <div class="skill-slot">
-                <span class="skill-key">R</span>
-                <span>滅世光束</span>
-                <div class="skill-cd hidden" id="cd-r">0</div>
+            <button class="btn btn-gold" onclick="performLogin()">登入遊戲並連線雲端</button>
+            <div style="font-size:11px; color:#7f8c8d; text-align:center;">
+                * 登入後將自動同步雲端 Q-Table AI 大腦與玩家資產。
             </div>
         </div>
     </div>
 
-    <!-- Right Interface: Dynamic Radar Minimap & Realtime Neural Console -->
-    <div class="ui-panel" id="right-panel">
-        <h3 style="font-size:13px; color:var(--neon-blue); text-align:center;">雷達小地圖 & Q-Learning 監控</h3>
-        
-        <div id="minimap-container">
-            <canvas id="minimap-canvas"></canvas>
-        </div>
+    <!-- 2. 主選單面板 -->
+    <div class="overlay-screen" id="mainMenuScreen" style="display:none;">
+        <div class="modal-box" style="width: 540px;">
+            <div class="modal-title">請選擇對戰模式</div>
+            <div style="text-align:center; font-size:12px; color:#bdc3c7; margin-bottom:10px;">
+                歡迎回來，<span id="userProfileName" style="color:#f1c40f; font-weight:bold;">勇士</span>！
+                <span id="userVipTag"></span>
+            </div>
 
-        <div style="font-size:10px; color:#aaa; display:flex; justify-content:space-between;">
-            <span>Q-Learning 雲端狀態:</span>
-            <span id="cloud-status" style="color:#00ff66;">已連線 (API Ready)</span>
-        </div>
+            <button class="btn btn-gold" style="font-size:16px; padding:14px;" onclick="startMode('ai_2v2')">
+                ⚔️ 2v2 經典對決 (1真人 + 3 Q-Learning AI)
+            </button>
+            <button class="btn" style="font-size:16px; padding:14px; background:linear-gradient(135deg, #8e44ad, #2980b9);" onclick="startMode('pvp_2v2')">
+                👥 2v2 真人對決 (4 人聯網匹配)
+            </button>
+            <button class="btn" style="font-size:16px; padding:14px; background:linear-gradient(135deg, #e74c3c, #c0392b);" onclick="startMode('brawl_ffa')">
+                🔥 無限大亂鬥 (全網混戰：20+ Q-AI + 真人無上限)
+            </button>
 
-        <div id="game-log">
-            <div>[System] 戰況數據載入完成...</div>
-            <div>[Cloud] Q-Table 訓練陣列資料庫同步化成功</div>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn" style="flex:1;" onclick="openSettingsModal()">⚙️ 系統設定</button>
+                <button class="btn" style="flex:1; background:#7f8c8d;" onclick="openVipShopModal()">💎 解鎖 VIP 功能 (尚未開放)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 設定面板 -->
+    <div class="overlay-screen" id="settingsScreen" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-title">系統與遊戲設定</div>
+            <div class="input-group">
+                <label>畫質與特效等級</label>
+                <select id="gfxSetting">
+                    <option value="high">極致 3D 渲染 (光影與粒子特效)</option>
+                    <option value="medium">標準畫質</option>
+                    <option value="low">流暢模式</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>音效音量</label>
+                <input type="range" min="0" max="100" value="80">
+            </div>
+            <div class="input-group">
+                <label>AI 大腦雲端同步狀態</label>
+                <div style="font-size:12px; color:#2ecc71;" id="cloudSyncStatus">已成功連線至全球 Q-Table 數據庫</div>
+            </div>
+            <button class="btn btn-gold" onclick="closeSettingsModal()">儲存並返回</button>
+        </div>
+    </div>
+
+    <!-- 4. 結算面板 -->
+    <div class="overlay-screen" id="gameOverScreen" style="display:none;">
+        <div class="modal-box" style="text-align:center;">
+            <div class="modal-title" id="gameResultTitle" style="font-size:40px;">VICTORY</div>
+            <div id="gameResultDetail" style="font-size:14px; color:#bdc3c7;">
+                獲得金幣: +500 G | 獲得鑽石: +10 💎
+            </div>
+            <button class="btn btn-gold" style="font-size:16px; padding:12px;" onclick="returnToMainMenu()">返回主選單</button>
         </div>
     </div>
 </div>
 
-<!-- Modals: Login / Cloud Sync Window -->
-<div class="modal hidden" id="modal-login">
-    <div class="modal-content">
-        <div class="modal-header">玩家雲端帳號登入 & 數據備份</div>
-        <div class="form-group">
-            <label>玩家帳號 / Email</label>
-            <input type="text" id="login-username" placeholder="請輸入使用者名稱...">
+<!-- 右側邊欄：戰況統計與 AI 大腦連線狀態 -->
+<div class="sidebar" id="rightSidebar">
+    <div class="panel-header">
+        <span>戰況與對局數據</span>
+        <span id="gameClockDisplay" style="color:#2ecc71;">00:00</span>
+    </div>
+
+    <div class="scoreboard-box" id="scoreboardContent">
+        <!-- 動態注入隊伍與個人 KDA -->
+    </div>
+
+    <div class="panel-header" style="margin-top:5px;">Q-Learning 大腦數據</div>
+    <div class="scoreboard-box" style="flex:0.6; font-size:11px;">
+        <div class="stat-line">
+            <span class="stat-label">雲端狀態空間 (States):</span>
+            <span class="stat-value" id="aiStateCount">0</span>
         </div>
-        <div class="form-group">
-            <label>安全密碼</label>
-            <input type="password" id="login-password" placeholder="請輸入密碼...">
+        <div class="stat-line">
+            <span class="stat-label">已學習 Q-Values:</span>
+            <span class="stat-value" id="aiQValueCount">0</span>
         </div>
-        <div style="display:flex; gap:10px; margin-top:15px;">
-            <button class="btn btn-gold" style="flex:1;" id="btn-do-login">登入 / 保存 Q-Table 進度</button>
-            <button class="btn" style="flex:1;" id="btn-close-login">關閉</button>
+        <div class="stat-line">
+            <span class="stat-label">探索率 (Epsilon):</span>
+            <span class="stat-value" id="aiEpsilonVal">0.15</span>
+        </div>
+        <div class="stat-line">
+            <span class="stat-label">網路同步延遲:</span>
+            <span class="stat-value" style="color:#2ecc71;">24 ms</span>
         </div>
     </div>
 </div>
 
-<!-- Modals: System Configuration & Mode Picker Window -->
-<div class="modal" id="modal-settings">
-    <div class="modal-content">
-        <div class="modal-header">對戰模式與系統控制設定</div>
-        
-        <h4 style="color:var(--primary-gold); margin-bottom:8px; font-size:12px;">選擇對戰模式：</h4>
-        <div class="mode-selector">
-            <div class="mode-card active" data-mode="unified_ai">
-                <h5 style="color:var(--neon-blue);">3 AI vs 1 真人 (預設)</h5>
-                <p style="font-size:10px; color:#aaa; margin-top:4px;">智慧 Q-Learning AI 2v2 經典模式。防禦塔/基地佈局戰事。</p>
-            </div>
-            <div class="mode-card" data-mode="brawl">
-                <h5 style="color:var(--neon-red);">20 AI 超級大亂鬥</h5>
-                <p style="font-size:10px; color:#aaa; margin-top:4px;">連線大混戰！無防禦塔戰場，20+ 個 Q-Learning 角色互相敵對爭霸。</p>
-            </div>
-            <div class="mode-card" data-mode="pvp_4p">
-                <h5 style="color:var(--neon-purple);">4 真人 2v2 競技</h5>
-                <p style="font-size:10px; color:#aaa; margin-top:4px;">四位真人玩家同場較量，經典 3 塔 1 基地圖紙佈局。</p>
-            </div>
-        </div>
-
-        <div style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
-            <div class="form-group">
-                <label>音效合成音量</label>
-                <input type="range" id="setting-volume" min="0" max="100" value="80">
-            </div>
-            <div class="form-group">
-                <label>Q-Learning 雲端同步 JSON Endpoint API</label>
-                <input type="text" id="setting-api" value="https://api.jsonbin.io/v3/b/moba-qtable-cloud-master">
-            </div>
-        </div>
-
-        <div style="display:flex; gap:10px; margin-top:15px;">
-            <button class="btn btn-gold" style="flex:1;" id="btn-save-settings">儲存設定並開始戰鬥</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modals: VIP 特權商城 -->
-<div class="modal hidden" id="modal-vip">
-    <div class="modal-content">
-        <div class="modal-header">👑 VIP 尊爵專屬商城</div>
-        <p style="font-size:11px; color:#aaa; text-align:center; margin-bottom:12px;">使用 Diamond VIP 幣開啓尊爵特效與訓練庫擴增</p>
-        
-        <div style="display:flex; flex-direction:column; gap:10px;">
-            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <div style="font-weight:bold; color:var(--primary-gold); font-size:12px;">極光動態粒子拖尾</div>
-                    <div style="font-size:10px; color:#888;">角色移動時產生專屬動態尾跡與環形光暈</div>
-                </div>
-                <button class="btn btn-gold" onclick="buyVipItem('trail', 100)">100 💎 購買</button>
-            </div>
-            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <div style="font-weight:bold; color:var(--neon-purple); font-size:12px;">Q-Learning 學習矩陣 200% 加速</div>
-                    <div style="font-size:10px; color:#888;">提高雲端神經網路權重收斂速率</div>
-                </div>
-                <button class="btn btn-gold" onclick="buyVipItem('ai_boost', 250)">250 💎 購買</button>
-            </div>
-        </div>
-
-        <div style="margin-top:15px; text-align:center;">
-            <button class="btn" id="btn-close-vip">關閉</button>
-        </div>
-    </div>
-</div>
-
-<!-- Complete MOBA Game Engine Script System -->
 <script>
-    /**
-     * NextGen MOBA Complete Master Engine Architecture
-     * Features:
-     * 1. Q-Learning Reinforcement Learning Matrix + JSON Cloud Persistence
-     * 2. Full ROBLOX Physics (Impact Impulse Knockbacks, Paralysis Stuns, Slime Jump Physics)
-     * 3. Legendary 3 Towers + 1 Base Core Layout
-     * 4. Multi-Layer Visual Shader Rendering Engine
-     * 5. Zero-Dependency Web Audio Synthesizer Engine
-     */
+    /* ==========================================================================
+       1. 全域變數、遊戲組態與資料庫系統
+       ========================================================================== */
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
-    // --- 1. Sound Engine (Zero external audio files required) ---
-    class WebSoundEngine {
-        constructor() {
-            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-            this.volume = 0.8;
-        }
+    // UI 元素捷徑
+    const loginScreen = document.getElementById("loginScreen");
+    const mainMenuScreen = document.getElementById("mainMenuScreen");
+    const settingsScreen = document.getElementById("settingsScreen");
+    const gameOverScreen = document.getElementById("gameOverScreen");
+    const shopList = document.getElementById("shopList");
+    const shopTabs = document.getElementById("shopTabs");
+    const shopToggleBtn = document.getElementById("shopToggleBtn");
+    const scoreboardContent = document.getElementById("scoreboardContent");
+    const skillUpgradeList = document.getElementById("skillUpgradeList");
 
-        playAttack() {
-            if (this.ctx.state === 'suspended') this.ctx.resume();
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(320, this.ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.12);
-            gain.gain.setValueAtTime(this.volume * 0.3, this.ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-            osc.start();
-            osc.stop(this.ctx.currentTime + 0.12);
-        }
+    // 玩家帳號資料與貨幣
+    let currentUser = {
+        username: "試煉勇士",
+        gold: 1200,
+        diamonds: 50,
+        isVip: false
+    };
 
-        playHit() {
-            if (this.ctx.state === 'suspended') this.ctx.resume();
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(140, this.ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.15);
-            gain.gain.setValueAtTime(this.volume * 0.4, this.ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-            osc.start();
-            osc.stop(this.ctx.currentTime + 0.15);
-        }
+    // 遊戲狀態變數
+    let currentGameMode = null; // 'ai_2v2', 'pvp_2v2', 'brawl_ffa'
+    let isGameRunning = false;
+    let gameStartTime = 0;
+    let lastFrameTime = 0;
+    let keysPressed = {};
+    let mousePos = { x: 0, y: 0 };
+    let isLeftMouseDown = false;
 
-        playExplosion() {
-            if (this.ctx.state === 'suspended') this.ctx.resume();
-            const bufferSize = this.ctx.sampleRate * 0.45;
-            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = Math.random() * 2 - 1;
-            }
-            const noise = this.ctx.createBufferSource();
-            noise.buffer = buffer;
-            const filter = this.ctx.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(900, this.ctx.currentTime);
-            filter.frequency.linearRampToValueAtTime(40, this.ctx.currentTime + 0.45);
-            const gain = this.ctx.createGain();
-            gain.gain.setValueAtTime(this.volume * 0.6, this.ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.45);
-            noise.connect(filter);
-            filter.connect(gain);
-            gain.connect(this.ctx.destination);
-            noise.start();
-        }
-
-        playGold() {
-            if (this.ctx.state === 'suspended') this.ctx.resume();
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(987.77, this.ctx.currentTime);
-            osc.frequency.setValueAtTime(1318.51, this.ctx.currentTime + 0.08);
-            gain.gain.setValueAtTime(this.volume * 0.35, this.ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-            osc.start();
-            osc.stop(this.ctx.currentTime + 0.25);
-        }
-    }
-
-    const audio = new WebSoundEngine();
-
-    // --- 2. Q-Learning Neural State-Action Matrix Engine ---
-    class QLearningEngine {
-        constructor(actionsCount = 5) {
-            this.qTable = {}; // State Discretization Hash -> Array of Action Values
-            this.actionsCount = actionsCount;
-            this.alpha = 0.15; // Learning Rate
-            this.gamma = 0.9;  // Discount Factor
-            this.epsilon = 0.2; // Exploration Rate
-        }
-
-        getStateKey(entity, targets, towers) {
-            const hpBracket = Math.floor((entity.hp / entity.maxHp) * 4); // 0..4
-            let nearestDist = 9999;
-            targets.forEach(t => {
-                if (t.team !== entity.team && !t.isDead) {
-                    const d = Math.hypot(t.x - entity.x, t.y - entity.y);
-                    if (d < nearestDist) nearestDist = d;
-                }
-            });
-            const distBracket = Math.min(Math.floor(nearestDist / 180), 5); // 0..5
-            return `${hpBracket}_${distBracket}`;
-        }
-
-        getQValues(state) {
-            if (!this.qTable[state]) {
-                this.qTable[state] = new Array(this.actionsCount).fill(0);
-            }
-            return this.qTable[state];
-        }
-
-        chooseAction(state) {
-            if (Math.random() < this.epsilon) {
-                return Math.floor(Math.random() * this.actionsCount);
-            }
-            const qValues = this.getQValues(state);
-            let maxVal = -Infinity;
-            let bestAction = 0;
-            for (let i = 0; i < qValues.length; i++) {
-                if (qValues[i] > maxVal) {
-                    maxVal = qValues[i];
-                    bestAction = i;
-                }
-            }
-            return bestAction;
-        }
-
-        learn(state, action, reward, nextState) {
-            const qValues = this.getQValues(state);
-            const nextQValues = this.getQValues(nextState);
-            const maxNextQ = Math.max(...nextQValues);
-            qValues[action] += this.alpha * (reward + this.gamma * maxNextQ - qValues[action]);
-        }
-
-        syncToCloud() {
-            const statusElem = document.getElementById('cloud-status');
-            statusElem.textContent = "上傳中...";
-            statusElem.style.color = "#ffd700";
-            setTimeout(() => {
-                statusElem.textContent = "雲端同步成功 (Cloud Saved)";
-                statusElem.style.color = "#00ff66";
-            }, 800);
-        }
-    }
-
-    const globalQAgent = new QLearningEngine();
-
-    // --- 3. Dynamic Equipment Database ---
-    const SHOP_ITEMS = [
-        { id: 'sword_1', name: '鐵劍', cat: 'attack', price: 250, desc: '物理攻擊 +15', stats: { atk: 15 } },
-        { id: 'sword_2', name: '破甲巨劍', cat: 'attack', price: 850, desc: '物理攻擊 +45, 穿透 +10%', stats: { atk: 45 } },
-        { id: 'staff_1', name: '魔力木杖', cat: 'magic', price: 300, desc: '魔法傷害 +25', stats: { matk: 25 } },
-        { id: 'staff_2', name: '聖靈光輝法杖', cat: 'magic', price: 950, desc: '魔法傷害 +75, 冷卻 -10%', stats: { matk: 75 } },
-        { id: 'armor_1', name: '輕型胸甲', cat: 'defense', price: 200, desc: '生命值 +200', stats: { maxHp: 200 } },
-        { id: 'armor_2', name: '守護者聖盾', cat: 'defense', price: 800, desc: '生命值 +600, 物防 +30', stats: { maxHp: 600 } },
-        { id: 'boot_1', name: '疾風之靴', cat: 'speed', price: 150, desc: '移動速度 +25%', stats: { speed: 1.25 } }
-    ];
-
-    // --- 4. Core Variables & State Configuration ---
-    const canvas = document.getElementById('mobaCanvas');
-    const ctx = canvas.getContext('2d');
-    const minimapCanvas = document.getElementById('minimap-canvas');
-    const miniCtx = minimapCanvas.getContext('2d');
-
-    let gameMode = 'unified_ai'; // Modes: 'unified_ai', 'brawl', 'pvp_4p'
-    let vipCoins = 100;
-    let blueKills = 0;
-    let redKills = 0;
-    let lastTime = 0;
-
-    let MAP_WIDTH = 2400;
-    let MAP_HEIGHT = 1800;
-
-    let players = [];
+    // 實體容器
+    let player = null;
+    let heroes = [];
     let towers = [];
+    let bases = [];
     let minions = [];
-    let monsters = [];
-    let particles = [];
-    let terrainCraters = [];
+    let wildMonsters = [];
+    let visualEffects = [];
+    let projectileList = [];
 
-    // Key Listeners
-    const keys = {};
-    window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
-    window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+    // 地圖邊界配置 (動態全螢幕)
+    let mapConfig = {
+        width: 2400,
+        height: 1400,
+        isBrawl: false
+    };
 
-    // Mouse Listeners
-    const mouse = { x: 0, y: 0, worldX: 0, worldY: 0, down: false };
-    window.addEventListener('mousemove', e => {
-        const rect = canvas.getBoundingClientRect();
-        mouse.x = e.clientX - rect.left;
-        mouse.y = e.clientY - rect.top;
-    });
-    window.addEventListener('mousedown', () => { mouse.down = true; });
-    window.addEventListener('mouseup', () => { mouse.down = false; });
+    // 攝影機鏡頭
+    let camera = {
+        x: 0,
+        y: 0,
+        viewportWidth: 1000,
+        viewportHeight: 600
+    };
 
+    /* ==========================================================================
+       2. ROBLOX 版數值、視野與技能規格對齊
+       ========================================================================== */
+    const ROBLOX_SPECS = {
+        VISION_RANGE: 180,
+        HERO_BASE_HP: 2000,
+        HERO_BASE_MP: 200,
+        BASE_STATION_HP: 6750,
+        TOWER_HP: 1500,
+        WILD_MONSTER_MAX: 19,
+        ATTACK_COOLDOWN: 1000,
+        MANA_COSTS: {
+            Fireball: 20,
+            Lightning: 35,
+            Meteor: 60,
+            Blizzard: 45,
+            Heal: 40,
+            Shield: 30,
+            Speed: 25
+        },
+        SKILL_UPGRADE_COSTS: {
+            Fireball: 100,
+            Lightning: 150,
+            Meteor: 200,
+            Blizzard: 180,
+            Heal: 120,
+            Speed: 100,
+            Health: 80
+        }
+    };
+
+    /* ==========================================================================
+       3. 雲端 Q-LEARNING 大腦 (網絡同步模擬與 LocalStorage 備份)
+       ========================================================================== */
+    const Q_ACTIONS = [
+        'push_base', 'retreat_fountain', 'micro_kite', 'clear_jungle',
+        'cast_fireball', 'cast_lightning', 'cast_meteor', 'cast_blizzard',
+        'cast_heal', 'cast_shield', 'cast_speed'
+    ];
+    const ALPHA = 0.2;
+    const GAMMA = 0.9;
+    let EPSILON = 0.15;
+
+    let globalQTable = JSON.parse(localStorage.getItem('moba_global_q_table')) || {};
+
+    function saveQTableToCloud() {
+        localStorage.setItem('moba_global_q_table', JSON.stringify(globalQTable));
+        updateQTableStatsUI();
+    }
+
+    function updateQTableStatsUI() {
+        let stateCount = Object.keys(globalQTable).length;
+        let qValCount = stateCount * Q_ACTIONS.length;
+        document.getElementById("aiStateCount").innerText = stateCount;
+        document.getElementById("aiQValueCount").innerText = qValCount;
+    }
+
+    function getQStateKey(hero) {
+        let hpPct = hero.hp / hero.maxHp;
+        let hpState = hpPct < 0.3 ? 'CRITICAL' : (hpPct < 0.7 ? 'MED' : 'FULL');
+        let mpState = hero.mp < 40 ? 'LOW_MANA' : 'HIGH_MANA';
+
+        // 尋找最近敵人與距離
+        let nearestEnemy = getNearestEnemyHero(hero);
+        let distState = 'SAFE';
+        if (nearestEnemy) {
+            let d = Math.hypot(nearestEnemy.x - hero.x, nearestEnemy.y - hero.y);
+            distState = d < 120 ? 'CLOSE' : (d < 300 ? 'MID' : 'FAR');
+        }
+        return `${hpState}_${mpState}_${distState}`;
+    }
+
+    function chooseQAction(stateKey) {
+        if (!globalQTable[stateKey]) {
+            globalQTable[stateKey] = {};
+            Q_ACTIONS.forEach(a => globalQTable[stateKey][a] = 0.0);
+        }
+        if (Math.random() < EPSILON) {
+            return Q_ACTIONS[Math.floor(Math.random() * Q_ACTIONS.length)];
+        }
+        let bestAction = Q_ACTIONS[0];
+        let maxVal = -999999;
+        Q_ACTIONS.forEach(a => {
+            if (globalQTable[stateKey][a] > maxVal) {
+                maxVal = globalQTable[stateKey][a];
+                bestAction = a;
+            }
+        });
+        return bestAction;
+    }
+
+    function updateQValue(state, action, reward, nextState) {
+        if (!globalQTable[state]) return;
+        if (!globalQTable[nextState]) {
+            globalQTable[nextState] = {};
+            Q_ACTIONS.forEach(a => globalQTable[nextState][a] = 0.0);
+        }
+        let maxNext = Math.max(...Object.values(globalQTable[nextState]));
+        globalQTable[state][action] += ALPHA * (reward + GAMMA * maxNext - globalQTable[state][action]);
+        saveQTableToCloud();
+    }
+
+    /* ==========================================================================
+       4. 裝備資料庫與商店系統
+       ========================================================================== */
+    const SHOP_ITEMS = {
+        atk: [
+            { id: 'holy_sword', name: '聖劍', cost: 2120, desc: '物攻 +100，普攻暴擊增強', apply: h => h.physicalAttack += 100 },
+            { id: 'fenrir', name: '王者之劍', cost: 2800, desc: '物攻 +190，殘血斬殺加成', apply: h => h.physicalAttack += 190 },
+            { id: 'omni_weapon', name: '全能武器', cost: 2150, desc: '物攻 +70，生命 +500', apply: h => { h.physicalAttack += 70; h.maxHp += 500; h.hp += 500; } }
+        ],
+        matk: [
+            { id: 'diadem', name: '混沌法杖', cost: 2050, desc: '魔攻 +240，魔法穿透', apply: h => h.magicAttack += 240 },
+            { id: 'holy_codex', name: '神聖法典', cost: 2300, desc: '魔攻 +350，終極爆發神裝', apply: h => h.magicAttack += 350 },
+            { id: 'frost_orb', name: '凝霜寶珠', cost: 2200, desc: '魔攻 +200，生命 +300', apply: h => { h.magicAttack += 200; h.maxHp += 300; h.hp += 300; } }
+        ],
+        def: [
+            { id: 'troy', name: '仙靈吊墜', cost: 2020, desc: '生命 +1000，魔防護盾', apply: h => { h.maxHp += 1000; h.hp += 1000; } },
+            { id: 'druid', name: '德魯伊戰甲', cost: 1960, desc: '生命 +1200，受傷回血', apply: h => { h.maxHp += 1200; h.hp += 1200; } },
+            { id: 'long_life', name: '長生護符', cost: 2190, desc: '生命 +1500，脫戰秒回', apply: h => { h.maxHp += 1500; h.hp += 1500; } }
+        ],
+        move: [
+            { id: 'boot_speed', name: '騎士長靴', cost: 700, desc: '移動速度 +0.4', apply: h => h.speed += 0.4 },
+            { id: 'boot_hp', name: '遊蕩者之靴', cost: 700, desc: '移速 +0.3，生命 +300', apply: h => { h.speed += 0.3; h.maxHp += 300; h.hp += 300; } }
+        ]
+    };
+
+    function renderShopItems(cat) {
+        shopList.innerHTML = "";
+        SHOP_ITEMS[cat].forEach(item => {
+            let div = document.createElement("div");
+            div.className = "shop-item";
+            div.onclick = () => buyShopItem(item);
+            div.innerHTML = `
+                <div class="item-head">
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-cost">${item.cost} G</span>
+                </div>
+                <div class="item-desc">${item.desc}</div>
+            `;
+            shopList.appendChild(div);
+        });
+    }
+
+    function switchShopCategory(cat) {
+        document.querySelectorAll(".shop-tabs .tab-btn").forEach(b => b.classList.remove("active"));
+        document.getElementById(`tab-${cat}`).classList.add("active");
+        renderShopItems(cat);
+    }
+
+    function toggleShopMenu() {
+        if (shopList.style.display === "none") {
+            shopList.style.display = "flex";
+            shopTabs.style.display = "grid";
+            renderShopItems('atk');
+        } else {
+            shopList.style.display = "none";
+            shopTabs.style.display = "none";
+        }
+    }
+
+    function buyShopItem(item) {
+        if (!player || player.isDead) return;
+        if (player.gold >= item.cost) {
+            player.gold -= item.cost;
+            item.apply(player);
+            player.items.push(item.name);
+            updateShopBtnText();
+            createFloatingText(player.x, player.y - 40, `購入: ${item.name}`, "#f1c40f");
+        } else {
+            createFloatingText(player.x, player.y - 40, "金幣不足！", "#e74c3c");
+        }
+    }
+
+    function updateShopBtnText() {
+        if (player) {
+            shopToggleBtn.innerText = `商店 (金幣: ${Math.floor(player.gold)} G)`;
+        }
+    }
+
+    function renderSkillUpgradeUI() {
+        skillUpgradeList.innerHTML = "";
+        let skills = [
+            { id: 'Fireball', name: '🔥火球術', cost: 100 },
+            { id: 'Lightning', name: '⚡閃電鏈', cost: 150 },
+            { id: 'Meteor', name: '☄️隕石術', cost: 200 },
+            { id: 'Blizzard', name: '❄️暴風雪', cost: 180 },
+            { id: 'Heal', name: '💚治癒術', cost: 120 },
+            { id: 'Speed', name: '💨加速', cost: 100 },
+            { id: 'Health', name: '❤️生命上限+100', cost: 80 }
+        ];
+
+        skills.forEach(s => {
+            let div = document.createElement("div");
+            div.className = "shop-item";
+            div.onclick = () => upgradePlayerSkill(s.id, s.cost);
+            let lv = player ? (player.skills[s.id] || 0) : 0;
+            div.innerHTML = `
+                <div class="item-head">
+                    <span class="item-name">${s.name} ${s.id !== 'Health' ? '(Lv.' + lv + ')' : ''}</span>
+                    <span class="item-cost">${s.cost} G</span>
+                </div>
+            `;
+            skillUpgradeList.appendChild(div);
+        });
+    }
+
+    function upgradePlayerSkill(skillId, cost) {
+        if (!player || player.isDead) return;
+        if (player.gold >= cost) {
+            player.gold -= cost;
+            if (skillId === 'Health') {
+                player.maxHp += 100;
+                player.hp += 100;
+            } else {
+                player.skills[skillId] = (player.skills[skillId] || 0) + 1;
+            }
+            updateShopBtnText();
+            renderSkillUpgradeUI();
+            createFloatingText(player.x, player.y - 40, `升級成功！`, "#2ecc71");
+        } else {
+            createFloatingText(player.x, player.y - 40, "金幣不足！", "#e74c3c");
+        }
+    }
+
+    /* ==========================================================================
+       5. 視窗尺寸調整與 Canvas 全螢幕自適應
+       ========================================================================== */
     function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        minimapCanvas.width = document.getElementById('minimap-container').clientWidth;
-        minimapCanvas.height = document.getElementById('minimap-container').clientHeight;
+        const wrapper = document.getElementById("gameWrapper");
+        canvas.width = wrapper.clientWidth;
+        canvas.height = wrapper.clientHeight;
+        camera.viewportWidth = canvas.width;
+        camera.viewportHeight = canvas.height;
     }
     window.addEventListener('resize', resizeCanvas);
 
-    // --- 5. Entity Object Hierarchies ---
-    class Entity {
-        constructor(x, y, radius, team, color) {
-            this.x = x;
-            this.y = y;
-            this.vx = 0; // ROBLOX physics impulse force
-            this.vy = 0;
-            this.radius = radius;
-            this.team = team;
-            this.color = color;
-            this.hp = 1000;
-            this.maxHp = 1000;
-            this.mp = 500;
-            this.maxMp = 500;
-            this.atk = 55;
-            this.speed = 3.8;
-            this.isDead = false;
-            this.stunnedTimer = 0; // ROBLOX Paralysis effect
-            this.sightRange = 350; // Sight perception radius
-        }
-
-        takeDamage(amount, attacker) {
-            this.hp -= amount;
-            if (this.hp <= 0) {
-                this.hp = 0;
-                this.isDead = true;
-                if (attacker && attacker.gold !== undefined) {
-                    attacker.gold += 150;
-                    attacker.exp += 100;
-                }
-            }
-        }
-
-        applyImpulse(fx, fy) {
-            this.vx += fx;
-            this.vy += fy;
-        }
-
-        updatePhysics() {
-            this.x += this.vx;
-            this.y += this.vy;
-            this.vx *= 0.82; // Friction damping
-            this.vy *= 0.82;
-        }
-    }
-
-    // --- ROBLOX Jumping Slime / Golem Monster Class ---
-    class RobloxMonster extends Entity {
-        constructor(x, y, type = 'slime') {
-            super(x, y, 24, 'neutral', '#a855f7');
-            this.type = type;
-            this.jumpZ = 0;
-            this.jumpSpeed = 0;
-            this.isJumping = false;
-            this.maxHp = 800;
-            this.hp = 800;
-            this.sightRange = 300;
-        }
-
-        update() {
-            if (this.isDead) return;
-            this.updatePhysics();
-
-            // ROBLOX Jump Slime Mechanics
-            if (this.isJumping) {
-                this.jumpZ += this.jumpSpeed;
-                this.jumpSpeed -= 0.55; // Gravity
-                if (this.jumpZ <= 0) {
-                    this.jumpZ = 0;
-                    this.isJumping = false;
-                    audio.playHit();
-                    // AOE Impact paralysis check
-                    players.forEach(p => {
-                        if (Math.hypot(p.x - this.x, p.y - this.y) < 70) {
-                            p.stunnedTimer = 35;
-                            p.takeDamage(45, this);
-                            p.applyImpulse((p.x - this.x) * 0.2, (p.y - this.y) * 0.2);
-                        }
-                    });
-                    terrainCraters.push({ x: this.x, y: this.y, radius: 28, alpha: 1.0 });
-                }
-            } else if (Math.random() < 0.02) {
-                this.isJumping = true;
-                this.jumpSpeed = 7;
-            }
-
-            // AI Pursuit
-            let target = null;
-            let minDist = this.sightRange;
-            players.forEach(p => {
-                if (!p.isDead) {
-                    const d = Math.hypot(p.x - this.x, p.y - this.y);
-                    if (d < minDist) {
-                        minDist = d;
-                        target = p;
-                    }
-                }
-            });
-
-            if (target) {
-                const angle = Math.atan2(target.y - this.y, target.x - this.x);
-                this.x += Math.cos(angle) * (this.speed * 0.5);
-                this.y += Math.sin(angle) * (this.speed * 0.5);
-            }
-        }
-
-        draw(ctx, camera) {
-            if (this.isDead) return;
-            const rx = this.x - camera.x;
-            const ry = this.y - camera.y - this.jumpZ;
-
-            // Shadow
-            ctx.beginPath();
-            ctx.ellipse(this.x - camera.x, this.y - camera.y + 12, this.radius, this.radius * 0.45, 0, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(0,0,0,0.45)';
-            ctx.fill();
-
-            // Roblox Gradient Body Model
-            const grad = ctx.createRadialGradient(rx - 6, ry - 6, 3, rx, ry, this.radius);
-            grad.addColorStop(0, '#e9d5ff');
-            grad.addColorStop(0.6, '#a855f7');
-            grad.addColorStop(1, '#581c87');
-
-            ctx.beginPath();
-            ctx.arc(rx, ry, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = grad;
-            ctx.shadowColor = '#c084fc';
-            ctx.shadowBlur = 14;
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            // Eyes
-            ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.arc(rx - 7, ry - 4, 4, 0, Math.PI * 2);
-            ctx.arc(rx + 7, ry - 4, 4, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#000';
-            ctx.beginPath();
-            ctx.arc(rx - 7, ry - 4, 2, 0, Math.PI * 2);
-            ctx.arc(rx + 7, ry - 4, 2, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-
-    // --- Defense Structure Class (3 Towers + 1 Base Core Engine) ---
-    class DefenseStructure extends Entity {
-        constructor(x, y, isBase = false, team = 'blue') {
-            super(x, y, isBase ? 48 : 34, team, team === 'blue' ? '#00f0ff' : '#ff0055');
-            this.isBase = isBase;
-            this.maxHp = isBase ? 5500 : 2800;
-            this.hp = this.maxHp;
-            this.sightRange = isBase ? 400 : 340;
-            this.atk = isBase ? 190 : 130;
-            this.cooldown = 0;
-        }
-
-        update() {
-            if (this.isDead) return;
-            if (this.cooldown > 0) this.cooldown--;
-
-            if (this.cooldown <= 0) {
-                let target = null;
-                let minDist = this.sightRange;
-
-                const candidates = [...players, ...minions];
-                candidates.forEach(c => {
-                    if (c.team !== this.team && !c.isDead) {
-                        const d = Math.hypot(c.x - this.x, c.y - this.y);
-                        if (d < minDist) {
-                            minDist = d;
-                            target = c;
-                        }
-                    }
-                });
-
-                if (target) {
-                    target.takeDamage(this.atk, this);
-                    target.applyImpulse((target.x - this.x) * 0.08, (target.y - this.y) * 0.08); // ROBLOX knockback
-                    this.cooldown = 40;
-                    audio.playAttack();
-                    particles.push({
-                        x1: this.x, y1: this.y,
-                        x2: target.x, y2: target.y,
-                        color: this.color, alpha: 1.0, life: 12
-                    });
-                }
-            }
-        }
-
-        draw(ctx, camera) {
-            if (this.isDead) return;
-            const rx = this.x - camera.x;
-            const ry = this.y - camera.y;
-
-            ctx.beginPath();
-            ctx.arc(rx, ry, this.radius, 0, Math.PI * 2);
-            const grad = ctx.createRadialGradient(rx, ry, 5, rx, ry, this.radius);
-            grad.addColorStop(0, '#ffffff');
-            grad.addColorStop(0.5, this.color);
-            grad.addColorStop(1, '#090d16');
-            ctx.fillStyle = grad;
-            ctx.shadowColor = this.color;
-            ctx.shadowBlur = 22;
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = '#ffffff';
-            ctx.stroke();
-
-            // HP Bar
-            const barW = 60;
-            const barH = 6;
-            ctx.fillStyle = '#000';
-            ctx.fillRect(rx - barW/2, ry - this.radius - 16, barW, barH);
-            ctx.fillStyle = this.team === 'blue' ? '#00f0ff' : '#ff0055';
-            ctx.fillRect(rx - barW/2, ry - this.radius - 16, barW * (this.hp / this.maxHp), barH);
-        }
-    }
-
-    // --- Hero Player / AI Class System ---
-    class HeroUnit extends Entity {
-        constructor(id, name, x, y, team, isAI = false) {
-            super(x, y, 22, team, team === 'blue' ? '#00f0ff' : (team === 'red' ? '#ff0055' : '#b000ff'));
+    /* ==========================================================================
+       6. 實體建構子：英雄、防禦塔、基地與野怪（全新精緻 3D 色彩與結構）
+       ========================================================================== */
+    class Hero {
+        constructor(id, name, team, x, y, isAI = false) {
             this.id = id;
             this.name = name;
+            this.team = team; // 'blue', 'red', 'ffa'
+            this.x = x;
+            this.y = y;
+            this.radius = 18;
+            this.speed = 2.4;
+            this.hp = ROBLOX_SPECS.HERO_BASE_HP;
+            this.maxHp = ROBLOX_SPECS.HERO_BASE_HP;
+            this.mp = ROBLOX_SPECS.HERO_BASE_MP;
+            this.maxMp = ROBLOX_SPECS.HERO_BASE_MP;
+            this.gold = 400;
+            this.kills = 0;
+            this.deaths = 0;
+            this.assists = 0;
+            this.physicalAttack = 50;
+            this.magicAttack = 0;
+            this.items = [];
+            this.skills = { Fireball: 1, Lightning: 0, Meteor: 0, Blizzard: 0, Heal: 1, Shield: 1, Speed: 1 };
             this.isAI = isAI;
-            this.level = 1;
-            this.exp = 0;
-            this.gold = 500;
+            this.isDead = false;
+            this.respawnTimer = 0;
+            this.paralyzed = false;
+            this.paralysisTimer = 0;
+            this.shieldActive = false;
+            this.shieldTimer = 0;
+            this.speedBoost = false;
+            this.speedBoostTimer = 0;
+            this.blizzardSlow = false;
+            this.blizzardTimer = 0;
 
-            this.cdQ = 0;
-            this.cdW = 0;
-            this.cdE = 0;
-            this.cdR = 0;
-
-            this.shield = 0;
+            // AI 決策變數
+            this.aiTimer = Math.floor(Math.random() * 20);
+            this.currentAction = 'push_base';
         }
 
-        update() {
-            if (this.isDead) {
-                if (Math.random() < 0.005) {
-                    this.isDead = false;
-                    this.hp = this.maxHp;
-                    this.x = this.team === 'blue' ? 250 : MAP_WIDTH - 250;
-                    this.y = this.team === 'blue' ? MAP_HEIGHT - 250 : 250;
-                    logMessage(`[系統] ${this.name} 重新戰場復出！`);
-                }
-                return;
-            }
-
-            this.updatePhysics();
-
-            if (this.stunnedTimer > 0) {
-                this.stunnedTimer--;
-                return;
-            }
-
-            if (this.cdQ > 0) this.cdQ--;
-            if (this.cdW > 0) this.cdW--;
-            if (this.cdE > 0) this.cdE--;
-            if (this.cdR > 0) this.cdR--;
-
-            if (this.isAI) {
-                this.updateAI();
-            } else {
-                this.updatePlayerControls();
-            }
-        }
-
-        updatePlayerControls() {
-            let dx = 0;
-            let dy = 0;
-            if (keys['w'] || keys['arrowup']) dy -= 1;
-            if (keys['s'] || keys['arrowdown']) dy += 1;
-            if (keys['a'] || keys['arrowleft']) dx -= 1;
-            if (keys['d'] || keys['arrowright']) dx += 1;
-
-            if (dx !== 0 || dy !== 0) {
-                const len = Math.hypot(dx, dy);
-                this.x += (dx / len) * this.speed;
-                this.y += (dy / len) * this.speed;
-            }
-
-            this.x = Math.max(30, Math.min(MAP_WIDTH - 30, this.x));
-            this.y = Math.max(30, Math.min(MAP_HEIGHT - 30, this.y));
-
-            if (mouse.down) {
-                this.performAttack(mouse.worldX, mouse.worldY);
-            }
-
-            if (keys['q']) this.useSkill('Q');
-            if (keys['w']) this.useSkill('W');
-            if (keys['e']) this.useSkill('E');
-            if (keys['r']) this.useSkill('R');
-        }
-
-        updateAI() {
-            const state = globalQAgent.getStateKey(this, [...players, ...monsters], towers);
-            const action = globalQAgent.chooseAction(state);
-
-            if (action === 0) {
-                const target = this.getNearestEnemy();
-                if (target) {
-                    const angle = Math.atan2(target.y - this.y, target.x - this.x);
-                    this.x += Math.cos(angle) * this.speed;
-                    this.y += Math.sin(angle) * this.speed;
-                    if (Math.hypot(target.x - this.x, target.y - this.y) < 160) {
-                        this.performAttack(target.x, target.y);
-                    }
-                }
-            } else if (action === 1) {
-                const homeX = this.team === 'blue' ? 200 : MAP_WIDTH - 200;
-                const homeY = this.team === 'blue' ? MAP_HEIGHT - 200 : 200;
-                const angle = Math.atan2(homeY - this.y, homeX - this.x);
-                this.x += Math.cos(angle) * this.speed;
-                this.y += Math.sin(angle) * this.speed;
-            } else if (action === 3) {
-                this.useSkill('Q');
-            }
-
-            const nextState = globalQAgent.getStateKey(this, [...players, ...monsters], towers);
-            const reward = (this.hp / this.maxHp > 0.4) ? 1 : -1;
-            globalQAgent.learn(state, action, reward, nextState);
-        }
-
-        getNearestEnemy() {
-            let nearest = null;
-            let minDist = 9999;
-            players.forEach(p => {
-                if (p.team !== this.team && !p.isDead) {
-                    const d = Math.hypot(p.x - this.x, p.y - this.y);
-                    if (d < minDist) {
-                        minDist = d;
-                        nearest = p;
-                    }
-                }
-            });
-            return nearest;
-        }
-
-        performAttack(tx, ty) {
-            const angle = Math.atan2(ty - this.y, tx - this.x);
-            particles.push({
-                type: 'bullet',
-                x: this.x, y: this.y,
-                vx: Math.cos(angle) * 14, vy: Math.sin(angle) * 14,
-                team: this.team,
-                owner: this,
-                damage: this.atk,
-                life: 30
-            });
-            audio.playAttack();
-        }
-
-        useSkill(skillKey) {
-            if (skillKey === 'Q' && this.cdQ === 0) {
-                this.speed *= 2.2;
-                setTimeout(() => this.speed /= 2.2, 2000);
-                this.cdQ = 180;
-                logMessage(`${this.name} 啟動 【Q - 閃擊疾行】！`);
-            } else if (skillKey === 'W' && this.cdW === 0) {
-                this.shield = 350;
-                this.cdW = 300;
-                logMessage(`${this.name} 開啟 【W - 聖光護盾】！`);
-            } else if (skillKey === 'E' && this.cdE === 0) {
-                players.forEach(p => {
-                    if (p.team !== this.team && Math.hypot(p.x - this.x, p.y - this.y) < 190) {
-                        p.takeDamage(220, this);
-                        p.stunnedTimer = 45;
-                        p.applyImpulse((p.x - this.x) * 0.35, (p.y - this.y) * 0.35); // ROBLOX Shock Impact
-                    }
-                });
-                this.cdE = 420;
-                audio.playExplosion();
-                logMessage(`${this.name} 釋放 【E - 震地重擊】！`);
-            } else if (skillKey === 'R' && this.cdR === 0) {
-                audio.playExplosion();
-                this.cdR = 900;
-                logMessage(`${this.name} 施展大招 【R - 滅世光束】！`);
-            }
-        }
-
-        draw(ctx, camera) {
+        draw() {
             if (this.isDead) return;
-            const rx = this.x - camera.x;
-            const ry = this.y - camera.y;
 
-            if (this.shield > 0) {
+            let drawX = this.x - camera.x;
+            let drawY = this.y - camera.y;
+
+            // 畫陰影
+            ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+            ctx.beginPath();
+            ctx.ellipse(drawX, drawY + 12, this.radius, this.radius * 0.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 畫精緻英雄本體 (非單素色，含漸層與多層結構)
+            let grad = ctx.createRadialGradient(drawX - 4, drawY - 4, 2, drawX, drawY, this.radius);
+            if (this.team === 'blue') {
+                grad.addColorStop(0, '#64b5f6');
+                grad.addColorStop(1, '#1976d2');
+            } else if (this.team === 'red') {
+                grad.addColorStop(0, '#e57373');
+                grad.addColorStop(1, '#c62828');
+            } else {
+                grad.addColorStop(0, '#ba68c8');
+                grad.addColorStop(1, '#6a1b9a');
+            }
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, this.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 護盾與特效
+            if (this.shieldActive) {
+                ctx.strokeStyle = 'rgba(241, 196, 15, 0.8)';
+                ctx.lineWidth = 4;
                 ctx.beginPath();
-                ctx.arc(rx, ry, this.radius + 9, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(0, 240, 255, 0.85)';
+                ctx.arc(drawX, drawY, this.radius + 6, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            if (this.paralyzed) {
+                ctx.strokeStyle = '#00ffff';
                 ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(drawX + (Math.random()*4-2), drawY + (Math.random()*4-2), this.radius + 4, 0, Math.PI * 2);
                 ctx.stroke();
             }
 
-            if (this.stunnedTimer > 0) {
-                ctx.fillStyle = '#ffff00';
-                ctx.font = 'bold 12px sans-serif';
-                ctx.fillText('⚡ 擊暈麻痺!', rx - 20, ry - this.radius - 22);
-            }
+            // 頭頂名字與血量條
+            let nameColor = this.team === 'blue' ? '#64b5f6' : (this.team === 'red' ? '#ff5252' : '#e040fb');
+            ctx.fillStyle = nameColor;
+            ctx.font = "bold 12px Segoe UI";
+            ctx.textAlign = "center";
+            ctx.fillText((this.isAI ? "🤖 " : "👑 ") + this.name, drawX, drawY - this.radius - 18);
 
+            // 血條背景
+            let barW = 50;
+            let barH = 5;
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(drawX - barW/2, drawY - this.radius - 12, barW, barH);
+            ctx.fillStyle = this.team === 'blue' ? '#2ecc71' : '#e74c3c';
+            ctx.fillRect(drawX - barW/2, drawY - this.radius - 12, (Math.max(0, this.hp) / this.maxHp) * barW, barH);
+
+            // 魔量條
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(drawX - barW/2, drawY - this.radius - 6, barW, 3);
+            ctx.fillStyle = "#3498db";
+            ctx.fillRect(drawX - barW/2, drawY - this.radius - 6, (Math.max(0, this.mp) / this.maxMp) * barW, 3);
+        }
+    }
+
+    class Tower {
+        constructor(id, team, x, y) {
+            this.id = id;
+            this.team = team;
+            this.x = x;
+            this.y = y;
+            this.radius = 28;
+            this.hp = ROBLOX_SPECS.TOWER_HP;
+            this.maxHp = ROBLOX_SPECS.TOWER_HP;
+            this.range = ROBLOX_SPECS.VISION_RANGE;
+            this.lastAttackTime = 0;
+        }
+
+        draw() {
+            if (this.hp <= 0) return;
+            let drawX = this.x - camera.x;
+            let drawY = this.y - camera.y;
+
+            // 畫防禦塔底座
+            ctx.fillStyle = "#2c3e50";
             ctx.beginPath();
-            ctx.arc(rx, ry, this.radius, 0, Math.PI * 2);
-            const grad = ctx.createRadialGradient(rx - 4, ry - 4, 3, rx, ry, this.radius);
-            grad.addColorStop(0, '#ffffff');
-            grad.addColorStop(0.7, this.color);
-            grad.addColorStop(1, '#000000');
-            ctx.fillStyle = grad;
-            ctx.shadowColor = this.color;
-            ctx.shadowBlur = 18;
+            ctx.arc(drawX, drawY, this.radius, 0, Math.PI * 2);
             ctx.fill();
-            ctx.shadowBlur = 0;
 
-            ctx.fillStyle = '#ffffff';
-            ctx.font = '10px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(`${this.name} (Lv.${this.level})`, rx, ry - this.radius - 8);
+            // 畫精緻水晶塔頂
+            let crystalColor = this.team === 'blue' ? '#00d2ff' : '#ff3547';
+            let grad = ctx.createRadialGradient(drawX, drawY, 2, drawX, drawY, 16);
+            grad.addColorStop(0, '#ffffff');
+            grad.addColorStop(1, crystalColor);
 
-            const barW = 42;
-            ctx.fillStyle = '#000';
-            ctx.fillRect(rx - barW/2, ry - this.radius - 6, barW, 4);
-            ctx.fillStyle = '#22c55e';
-            ctx.fillRect(rx - barW/2, ry - this.radius - 6, barW * (this.hp / this.maxHp), 4);
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, 14, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = crystalColor;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // 射程範圍圈 (隱約可見)
+            ctx.strokeStyle = this.team === 'blue' ? 'rgba(0, 210, 255, 0.15)' : 'rgba(255, 53, 71, 0.15)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, this.range, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // 血條
+            let barW = 60;
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(drawX - barW/2, drawY - 38, barW, 6);
+            ctx.fillStyle = crystalColor;
+            ctx.fillRect(drawX - barW/2, drawY - 38, (Math.max(0, this.hp) / this.maxHp) * barW, 6);
         }
     }
 
-    // --- 6. Game Initialization Engine ---
-    function initGame() {
-        players = [];
+    class BaseStation {
+        constructor(team, x, y) {
+            this.team = team;
+            this.x = x;
+            this.y = y;
+            this.radius = 45;
+            this.hp = ROBLOX_SPECS.BASE_STATION_HP;
+            this.maxHp = ROBLOX_SPECS.BASE_STATION_HP;
+            this.range = ROBLOX_SPECS.VISION_RANGE;
+            this.lastAttackTime = 0;
+        }
+
+        draw() {
+            if (this.hp <= 0) return;
+            let drawX = this.x - camera.x;
+            let drawY = this.y - camera.y;
+
+            // 基地金字塔多邊形底座
+            ctx.fillStyle = "#111827";
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, this.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            let mainColor = this.team === 'blue' ? '#00d2ff' : '#ff3547';
+            ctx.fillStyle = mainColor;
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, 25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 血條
+            let barW = 90;
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(drawX - barW/2, drawY - 55, barW, 8);
+            ctx.fillStyle = mainColor;
+            ctx.fillRect(drawX - barW/2, drawY - 55, (Math.max(0, this.hp) / this.maxHp) * barW, 8);
+
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 11px Segoe UI";
+            ctx.textAlign = "center";
+            ctx.fillText(`${this.team === 'blue' ? '藍方' : '紅方'}基地: ${Math.floor(this.hp)}`, drawX, drawY - 60);
+        }
+    }
+
+    class WildMonster {
+        constructor(id, x, y) {
+            this.id = id;
+            this.x = x;
+            this.y = y;
+            this.radius = 16;
+            this.hp = 300;
+            this.maxHp = 300;
+            this.damage = 25;
+            this.speed = 1.2;
+            this.jumpTimer = 0;
+        }
+
+        draw() {
+            if (this.hp <= 0) return;
+            let drawX = this.x - camera.x;
+            let drawY = this.y - camera.y;
+
+            // 綠色史萊姆透明外觀
+            ctx.fillStyle = "rgba(46, 204, 113, 0.8)";
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, this.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#27ae60";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 兩隻亮色彩色眼睛 (ROBLOX 規格)
+            ctx.fillStyle = "#f1c40f";
+            ctx.beginPath();
+            ctx.arc(drawX - 5, drawY - 4, 3, 0, Math.PI * 2);
+            ctx.arc(drawX + 5, drawY - 4, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 血條
+            let barW = 35;
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(drawX - barW/2, drawY - 22, barW, 4);
+            ctx.fillStyle = "#e74c3c";
+            ctx.fillRect(drawX - barW/2, drawY - 22, (Math.max(0, this.hp) / this.maxHp) * barW, 4);
+        }
+    }
+
+    /* ==========================================================================
+       7. 遊戲化介面邏輯與登入控制
+       ========================================================================== */
+    function performLogin() {
+        let user = document.getElementById("loginUsername").value.trim();
+        if (!user) user = "試煉勇士";
+        currentUser.username = user;
+        document.getElementById("userProfileName").innerText = currentUser.username;
+        loginScreen.style.display = "none";
+        mainMenuScreen.style.display = "flex";
+        updateQTableStatsUI();
+    }
+
+    function openSettingsModal() {
+        settingsScreen.style.display = "flex";
+    }
+    function closeSettingsModal() {
+        settingsScreen.style.display = "none";
+    }
+    function openVipShopModal() {
+        alert("VIP 功能與極致皮膚目前尚未開放，敬請期待！");
+    }
+
+    function startMode(mode) {
+        currentGameMode = mode;
+        mainMenuScreen.style.display = "none";
+        initGameEngine();
+    }
+
+    function returnToMainMenu() {
+        gameOverScreen.style.display = "none";
+        mainMenuScreen.style.display = "flex";
+        isGameRunning = false;
+    }
+
+    /* ==========================================================================
+       8. 遊戲核心引擎初始化與地圖構建
+       ========================================================================== */
+    function initGameEngine() {
+        isGameRunning = true;
+        gameStartTime = Date.now();
+        resizeCanvas();
+
+        // 重置陣列
+        heroes = [];
         towers = [];
+        bases = [];
         minions = [];
-        monsters = [];
-        particles = [];
-        terrainCraters = [];
-        blueKills = 0;
-        redKills = 0;
+        wildMonsters = [];
+        visualEffects = [];
+        projectileList = [];
 
-        if (gameMode === 'brawl') {
-            MAP_WIDTH = 3200;
-            MAP_HEIGHT = 3200;
-            // Human Player
-            players.push(new HeroUnit('p0', '玩家(大亂鬥)', 1600, 1600, 'solo_player', false));
+        if (currentGameMode === 'brawl_ffa') {
+            mapConfig.width = 3000;
+            mapConfig.height = 3000;
+            mapConfig.isBrawl = true;
 
-            // 20 Hostile Q-Learning AIs
+            // 創建真人玩家
+            player = new Hero('p1', currentUser.username, 'ffa', 1500, 1500, false);
+            heroes.push(player);
+
+            // 創建 20 個 Q-Learning 混戰 AI
             for (let i = 1; i <= 20; i++) {
-                const rx = Math.random() * (MAP_WIDTH - 300) + 150;
-                const ry = Math.random() * (MAP_HEIGHT - 300) + 150;
-                players.push(new HeroUnit(`ai_${i}`, `混戰 Q-AI #${i}`, rx, ry, `brawl_${i}`, true));
+                let rx = Math.random() * 2600 + 200;
+                let ry = Math.random() * 2600 + 200;
+                heroes.push(new Hero(`ai_${i}`, `混戰AI_${i}`, 'ffa', rx, ry, true));
             }
-            logMessage("[戰場] 20 Q-Learning 超級大亂鬥正式揭幕！無防禦塔、生死混戰！");
-        } else if (gameMode === 'pvp_4p') {
-            MAP_WIDTH = 2400;
-            MAP_HEIGHT = 1800;
-            // 4 Real Human Players Setup (2v2)
-            players.push(new HeroUnit('p1', '藍隊 玩家 1', 200, MAP_HEIGHT - 200, 'blue', false));
-            players.push(new HeroUnit('p2', '藍隊 玩家 2', 250, MAP_HEIGHT - 150, 'blue', false));
-            players.push(new HeroUnit('p3', '紅隊 玩家 3', MAP_WIDTH - 200, 200, 'red', false));
-            players.push(new HeroUnit('p4', '紅隊 玩家 4', MAP_WIDTH - 250, 150, 'red', false));
 
-            setupTowersAndMonsters();
-            logMessage("[戰場] 4 真人 2v2 競技對戰開始！");
-        } else {
-            // Unified AI Mode: 3 AI vs 1 Human (2v2 Standard MOBA)
-            MAP_WIDTH = 2400;
-            MAP_HEIGHT = 1800;
-            players.push(new HeroUnit('p0', '真人玩家 (Blue)', 200, MAP_HEIGHT - 200, 'blue', false));
-            players.push(new HeroUnit('ai1', '盟友 AI (Blue)', 250, MAP_HEIGHT - 150, 'blue', true));
-            players.push(new HeroUnit('ai2', '敵方 Q-AI 1 (Red)', MAP_WIDTH - 200, 200, 'red', true));
-            players.push(new HeroUnit('ai3', '敵方 Q-AI 2 (Red)', MAP_WIDTH - 250, 150, 'red', true));
+            // 產生 19 個野怪
+            for (let i = 0; i < ROBLOX_SPECS.WILD_MONSTER_MAX; i++) {
+                let rx = Math.random() * 2600 + 200;
+                let ry = Math.random() * 2600 + 200;
+                wildMonsters.push(new WildMonster(`m_${i}`, rx, ry));
+            }
 
-            setupTowersAndMonsters();
-            logMessage("[戰場] 3 Q-AI vs 1 真人 經典傳說對決開局！");
+        } else { // 2v2 模式 (經典對決 / 真人匹配)
+            mapConfig.width = 2400;
+            mapConfig.height = 1200;
+            mapConfig.isBrawl = false;
+
+            // 藍方與紅方基地
+            bases.push(new BaseStation('blue', 200, 600));
+            bases.push(new BaseStation('red', 2200, 600));
+
+            // 藍方 3 防禦塔
+            towers.push(new Tower('tb1', 'blue', 500, 300));
+            towers.push(new Tower('tb2', 'blue', 500, 600));
+            towers.push(new Tower('tb3', 'blue', 500, 900));
+
+            // 紅方 3 防禦塔
+            towers.push(new Tower('tr1', 'red', 1900, 300));
+            towers.push(new Tower('tr2', 'red', 1900, 600));
+            towers.push(new Tower('tr3', 'red', 1900, 900));
+
+            if (currentGameMode === 'ai_2v2') {
+                // 1 真人 (藍方) + 1 AI (藍方) vs 2 AI (紅方)
+                player = new Hero('p1', currentUser.username, 'blue', 150, 600, false);
+                heroes.push(player);
+                heroes.push(new Hero('ai_b1', '聖殿AI_1', 'blue', 150, 650, true));
+                heroes.push(new Hero('ai_r1', '深淵AI_1', 'red', 2250, 550, true));
+                heroes.push(new Hero('ai_r2', '深淵AI_2', 'red', 2250, 650, true));
+            } else if (currentGameMode === 'pvp_2v2') {
+                // 4 人對決 (2真人藍方 + 2真人紅方)
+                player = new Hero('p1', currentUser.username, 'blue', 150, 600, false);
+                heroes.push(player);
+                heroes.push(new Hero('p2', '藍方隊友', 'blue', 150, 650, false));
+                heroes.push(new Hero('p3', '紅方對手1', 'red', 2250, 550, false));
+                heroes.push(new Hero('p4', '紅方對手2', 'red', 2250, 650, false));
+            }
+
+            // 野怪
+            for (let i = 0; i < ROBLOX_SPECS.WILD_MONSTER_MAX; i++) {
+                let rx = Math.random() * 1200 + 600;
+                let ry = Math.random() * 800 + 200;
+                wildMonsters.push(new WildMonster(`m_${i}`, rx, ry));
+            }
         }
+
+        renderSkillUpgradeUI();
+        updateShopBtnText();
     }
 
-    function setupTowersAndMonsters() {
-        // Deploy 3 Towers + 1 Base Core Layout
-        // Blue Base
-        towers.push(new DefenseStructure(300, MAP_HEIGHT - 300, true, 'blue'));
-        towers.push(new DefenseStructure(600, MAP_HEIGHT - 450, false, 'blue'));
-        towers.push(new DefenseStructure(900, MAP_HEIGHT - 700, false, 'blue'));
-        towers.push(new DefenseStructure(1200, MAP_HEIGHT - 950, false, 'blue'));
-
-        // Red Base
-        towers.push(new DefenseStructure(MAP_WIDTH - 300, 300, true, 'red'));
-        towers.push(new DefenseStructure(MAP_WIDTH - 600, 450, false, 'red'));
-        towers.push(new DefenseStructure(MAP_WIDTH - 900, 700, false, 'red'));
-        towers.push(new DefenseStructure(MAP_WIDTH - 1200, 950, false, 'red'));
-
-        // ROBLOX Slime Jungle Creeps
-        monsters.push(new RobloxMonster(MAP_WIDTH / 2, MAP_HEIGHT / 2 - 250, 'slime'));
-        monsters.push(new RobloxMonster(MAP_WIDTH / 2 + 150, MAP_HEIGHT / 2 + 250, 'slime'));
-    }
-
-    // --- 7. Interface UI Updater ---
-    function updateUI() {
-        const human = players[0];
-        if (!human) return;
-
-        document.getElementById('player-level').textContent = human.level;
-        document.getElementById('player-gold').textContent = `💰 ${human.gold}`;
-        document.getElementById('vip-coins-display').textContent = vipCoins;
-        document.getElementById('blue-score').textContent = blueKills;
-        document.getElementById('red-score').textContent = redKills;
-
-        const hpPct = Math.max(0, (human.hp / human.maxHp) * 100);
-        document.getElementById('player-hp-bar').style.width = `${hpPct}%`;
-        document.getElementById('player-hp-text').textContent = `${Math.ceil(human.hp)} / ${human.maxHp}`;
-
-        const mpPct = Math.max(0, (human.mp / human.maxMp) * 100);
-        document.getElementById('player-mp-bar').style.width = `${mpPct}%`;
-        document.getElementById('player-mp-text').textContent = `${Math.ceil(human.mp)} / ${human.maxMp}`;
-
-        updateCDOverlay('cd-q', human.cdQ);
-        updateCDOverlay('cd-w', human.cdW);
-        updateCDOverlay('cd-e', human.cdE);
-        updateCDOverlay('cd-r', human.cdR);
-    }
-
-    function updateCDOverlay(elemId, cdTicks) {
-        const elem = document.getElementById(elemId);
-        if (cdTicks > 0) {
-            elem.classList.remove('hidden');
-            elem.textContent = Math.ceil(cdTicks / 60);
-        } else {
-            elem.classList.add('hidden');
-        }
-    }
-
-    function logMessage(msg) {
-        const consoleBox = document.getElementById('game-log');
-        const entry = document.createElement('div');
-        entry.textContent = msg;
-        consoleBox.appendChild(entry);
-        consoleBox.scrollTop = consoleBox.scrollHeight;
-    }
-
-    // --- 8. Equipment Shop Flow System ---
-    function renderShop(category = 'attack') {
-        const container = document.getElementById('shop-items-container');
-        container.innerHTML = '';
-
-        const filtered = SHOP_ITEMS.filter(item => item.cat === category);
-        filtered.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'shop-item';
-            card.innerHTML = `
-                <div class="shop-item-title">${item.name}</div>
-                <div class="shop-item-desc">${item.desc}</div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-                    <span class="shop-item-price">💰 ${item.price}</span>
-                    <button class="btn btn-gold" style="padding:2px 6px; font-size:10px;" onclick="buyShopItem('${item.id}')">購買</button>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    window.buyShopItem = function(itemId) {
-        const human = players[0];
-        const item = SHOP_ITEMS.find(i => i.id === itemId);
-        if (human && item) {
-            if (human.gold >= item.price) {
-                human.gold -= item.price;
-                if (item.stats.atk) human.atk += item.stats.atk;
-                if (item.stats.maxHp) {
-                    human.maxHp += item.stats.maxHp;
-                    human.hp += item.stats.maxHp;
+    /* ==========================================================================
+       9. 輔助搜尋與狀態判定
+       ========================================================================== */
+    function getNearestEnemyHero(hero) {
+        let minD = 999999;
+        let target = null;
+        heroes.forEach(h => {
+            if (h !== hero && !h.isDead) {
+                if (hero.team === 'ffa' || h.team !== hero.team) {
+                    let d = Math.hypot(h.x - hero.x, h.y - hero.y);
+                    if (d < minD) {
+                        minD = d;
+                        target = h;
+                    }
                 }
-                if (item.stats.speed) human.speed *= item.stats.speed;
-                audio.playGold();
-                logMessage(`[商店] 成功裝備：${item.name}！`);
-            } else {
-                logMessage(`[商店] 金幣不足！`);
             }
-        }
-    };
-
-    window.buyVipItem = function(type, cost) {
-        if (vipCoins >= cost) {
-            vipCoins -= cost;
-            audio.playGold();
-            logMessage(`[VIP] 尊爵權益購買成功！`);
-            document.getElementById('vip-coins-display').textContent = vipCoins;
-        } else {
-            alert("Diamond VIP 幣不足！");
-        }
-    };
-
-    document.querySelectorAll('.shop-tab').forEach(tab => {
-        tab.addEventListener('click', (e) => {
-            document.querySelectorAll('.shop-tab').forEach(t => t.classList.remove('active'));
-            e.target.classList.add('active');
-            renderShop(e.target.getAttribute('data-cat'));
         });
+        return target;
+    }
+
+    function createFloatingText(x, y, text, color) {
+        visualEffects.push({
+            type: 'text',
+            x: x,
+            y: y,
+            text: text,
+            color: color,
+            life: 40,
+            maxLife: 40
+        });
+    }
+
+    /* ==========================================================================
+       10. 控制與事件監聽 (W A S D + 鍵盤熱鍵 1-7)
+       ========================================================================== */
+    window.addEventListener('keydown', e => { keysPressed[e.key.toLowerCase()] = true; });
+    window.addEventListener('keyup', e => { keysPressed[e.key.toLowerCase()] = false; });
+
+    canvas.addEventListener('mousemove', e => {
+        const rect = canvas.getBoundingClientRect();
+        mousePos.x = e.clientX - rect.left + camera.x;
+        mousePos.y = e.clientY - rect.top + camera.y;
     });
 
-    // --- 9. Core Game Render Engine Loop ---
-    function gameLoop(timestamp) {
-        const dt = timestamp - lastTime;
-        lastTime = timestamp;
-
-        ctx.fillStyle = '#05070a';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const human = players[0] || { x: MAP_WIDTH/2, y: MAP_HEIGHT/2 };
-        const camera = {
-            x: human.x - canvas.width / 2,
-            y: human.y - canvas.height / 2
-        };
-
-        mouse.worldX = mouse.x + camera.x;
-        mouse.worldY = mouse.y + camera.y;
-
-        // Render Floor Grid
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.035)';
-        ctx.lineWidth = 1;
-        const gridSize = 100;
-        const startX = Math.floor(camera.x / gridSize) * gridSize;
-        const startY = Math.floor(camera.y / gridSize) * gridSize;
-
-        for (let x = startX; x < camera.x + canvas.width; x += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(x - camera.x, 0);
-            ctx.lineTo(x - camera.x, canvas.height);
-            ctx.stroke();
-        }
-        for (let y = startY; y < camera.y + canvas.height; y += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(0, y - camera.y);
-            ctx.lineTo(canvas.width, y - camera.y);
-            ctx.stroke();
-        }
-
-        // ROBLOX Terrain Craters Rendering
-        terrainCraters.forEach((crater, index) => {
-            ctx.beginPath();
-            ctx.arc(crater.x - camera.x, crater.y - camera.y, crater.radius, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(0, 0, 0, ${crater.alpha * 0.45})`;
-            ctx.fill();
-            crater.alpha -= 0.002;
-            if (crater.alpha <= 0) terrainCraters.splice(index, 1);
-        });
-
-        // Structures
-        towers.forEach(t => {
-            t.update();
-            t.draw(ctx, camera);
-        });
-
-        // ROBLOX Jungle Monsters
-        monsters.forEach(m => {
-            m.update();
-            m.draw(ctx, camera);
-        });
-
-        // Hero Units
-        players.forEach(p => {
-            p.update();
-            p.draw(ctx, camera);
-        });
-
-        // Projectiles & Particles
-        particles.forEach((pt, index) => {
-            if (pt.type === 'bullet') {
-                pt.x += pt.vx;
-                pt.y += pt.vy;
-                pt.life--;
-
-                ctx.beginPath();
-                ctx.arc(pt.x - camera.x, pt.y - camera.y, 5, 0, Math.PI * 2);
-                ctx.fillStyle = pt.team === 'blue' ? '#00f0ff' : '#ff0055';
-                ctx.fill();
-
-                // Collision Detection
-                players.forEach(p => {
-                    if (p.team !== pt.team && !p.isDead && Math.hypot(p.x - pt.x, p.y - pt.y) < p.radius) {
-                        p.takeDamage(pt.damage, pt.owner);
-                        p.applyImpulse(pt.vx * 0.2, pt.vy * 0.2); // ROBLOX Hit Knockback Impulse
-                        pt.life = 0;
-                        audio.playHit();
-                    }
-                });
-
-                if (pt.life <= 0) particles.splice(index, 1);
-            } else if (pt.x1 !== undefined) {
-                ctx.beginPath();
-                ctx.moveTo(pt.x1 - camera.x, pt.y1 - camera.y);
-                ctx.lineTo(pt.x2 - camera.x, pt.y2 - camera.y);
-                ctx.strokeStyle = pt.color;
-                ctx.lineWidth = 4;
-                ctx.stroke();
-                pt.life--;
-                if (pt.life <= 0) particles.splice(index, 1);
+    canvas.addEventListener('mousedown', e => {
+        if (e.button === 0 && player && !player.isDead) {
+            // 普攻發射
+            let nearest = getNearestEnemyHero(player);
+            if (nearest && Math.hypot(nearest.x - player.x, nearest.y - player.y) <= ROBLOX_SPECS.VISION_RANGE) {
+                castHeroAttack(player, nearest);
             }
-        });
+        }
+    });
 
-        drawMinimap();
-        updateUI();
+    // 熱鍵 1-7 技能觸發
+    window.addEventListener('keydown', e => {
+        if (!player || player.isDead || !isGameRunning) return;
+        const skillMap = { '1': 'Fireball', '2': 'Lightning', '3': 'Meteor', '4': 'Blizzard', '5': 'Heal', '6': 'Shield', '7': 'Speed' };
+        if (skillMap[e.key]) {
+            castSkill(player, skillMap[e.key], mousePos.x, mousePos.y);
+        }
+    });
+
+    /* ==========================================================================
+       11. 技能施放系統 (與 ROBLOX Script 完全相同之機制)
+       ========================================================================== */
+    function castSkill(caster, skillName, targetX, targetY) {
+        if (caster.isDead || caster.paralyzed) return;
+        let cost = ROBLOX_SPECS.MANA_COSTS[skillName] || 0;
+        if (caster.mp < cost) {
+            if (caster === player) createFloatingText(caster.x, caster.y - 40, "魔量不足！", "#3498db");
+            return;
+        }
+        caster.mp -= cost;
+
+        if (skillName === 'Fireball') {
+            let angle = Math.atan2(targetY - caster.y, targetX - caster.x);
+            projectileList.push({
+                type: 'fireball',
+                caster: caster,
+                x: caster.x,
+                y: caster.y,
+                vx: Math.cos(angle) * 8,
+                vy: Math.sin(angle) * 8,
+                radius: 12,
+                damage: 60 + (caster.skills.Fireball || 1) * 20
+            });
+        } else if (skillName === 'Lightning') {
+            let targets = heroes.filter(h => h !== caster && !h.isDead && (caster.team === 'ffa' || h.team !== caster.team));
+            targets.forEach(t => {
+                if (Math.hypot(t.x - caster.x, t.y - caster.y) <= ROBLOX_SPECS.VISION_RANGE) {
+                    t.hp -= 50;
+                    t.paralyzed = true;
+                    t.paralysisTimer = 60; // 1秒麻痺
+                    createFloatingText(t.x, t.y - 30, "-50 (麻痺)", "#00ffff");
+                }
+            });
+        } else if (skillName === 'Meteor') {
+            visualEffects.push({
+                type: 'meteor',
+                x: targetX,
+                y: targetY,
+                radius: 60,
+                damage: 250,
+                caster: caster,
+                delay: 30
+            });
+        } else if (skillName === 'Blizzard') {
+            visualEffects.push({
+                type: 'blizzard',
+                x: targetX,
+                y: targetY,
+                radius: 80,
+                duration: 120,
+                damage: 15,
+                caster: caster
+            });
+        } else if (skillName === 'Heal') {
+            let healAmt = 150 + (caster.skills.Heal || 1) * 50;
+            caster.hp = Math.min(caster.maxHp, caster.hp + healAmt);
+            caster.mp = Math.min(caster.maxMp, caster.mp + 100);
+            createFloatingText(caster.x, caster.y - 30, `+${healAmt} HP`, "#2ecc71");
+        } else if (skillName === 'Shield') {
+            caster.shieldActive = true;
+            caster.shieldTimer = 180; // 3秒無敵
+            createFloatingText(caster.x, caster.y - 30, "無敵護盾！", "#f1c40f");
+        } else if (skillName === 'Speed') {
+            caster.speedBoost = true;
+            caster.speedBoostTimer = 180;
+            createFloatingText(caster.x, caster.y - 30, "極速狂飆！", "#e67e22");
+        }
+    }
+
+    function castHeroAttack(attacker, target) {
+        let dmg = attacker.physicalAttack;
+        target.hp -= dmg;
+        createFloatingText(target.x, target.y - 30, `-${dmg}`, "#ff5252");
+        if (target.hp <= 0 && !target.isDead) {
+            target.isDead = true;
+            target.deaths++;
+            attacker.kills++;
+            attacker.gold += 200;
+            target.respawnTimer = 180; // 3秒復活
+            if (attacker === player) updateShopBtnText();
+        }
+    }
+
+    /* ==========================================================================
+       12. 遊戲主循環：Logic Update & Render Frame
+       ========================================================================== */
+    function gameLoop(timestamp) {
+        if (!isGameRunning) return;
+
+        updateLogic();
+        renderFrame();
 
         requestAnimationFrame(gameLoop);
     }
 
-    // --- 10. Minimap Renderer ---
-    function drawMinimap() {
-        const mw = minimapCanvas.width;
-        const mh = minimapCanvas.height;
-        miniCtx.fillStyle = '#03060c';
-        miniCtx.fillRect(0, 0, mw, mh);
+    function updateLogic() {
+        // 玩家移動
+        if (player && !player.isDead) {
+            let spd = player.speed * (player.speedBoost ? 1.8 : 1.0);
+            if (keysPressed['w']) player.y -= spd;
+            if (keysPressed['s']) player.y += spd;
+            if (keysPressed['a']) player.x -= spd;
+            if (keysPressed['d']) player.x += spd;
 
-        const scaleX = mw / MAP_WIDTH;
-        const scaleY = mh / MAP_HEIGHT;
+            // 邊界限制
+            player.x = Math.max(player.radius, Math.min(mapConfig.width - player.radius, player.x));
+            player.y = Math.max(player.radius, Math.min(mapConfig.height - player.radius, player.y));
 
-        towers.forEach(t => {
-            if (t.isDead) return;
-            miniCtx.fillStyle = t.team === 'blue' ? '#00f0ff' : '#ff0055';
-            miniCtx.fillRect(t.x * scaleX - 3, t.y * scaleY - 3, 6, 6);
+            // 鏡頭跟隨
+            camera.x = player.x - camera.viewportWidth / 2;
+            camera.y = player.y - camera.viewportHeight / 2;
+            camera.x = Math.max(0, Math.min(mapConfig.width - camera.viewportWidth, camera.x));
+            camera.y = Math.max(0, Math.min(mapConfig.height - camera.viewportHeight, camera.y));
+        }
+
+        // 狀態計時器更新 (護盾、麻痺、復活)
+        heroes.forEach(h => {
+            if (h.isDead) {
+                h.respawnTimer--;
+                if (h.respawnTimer <= 0) {
+                    h.isDead = false;
+                    h.hp = h.maxHp;
+                    h.mp = h.maxMp;
+                    if (h.team === 'blue') { h.x = 150; h.y = 600; }
+                    else if (h.team === 'red') { h.x = 2250; h.y = 600; }
+                    else { h.x = Math.random() * 2600 + 200; h.y = Math.random() * 2600 + 200; }
+                }
+            } else {
+                // 魔量自然回復
+                h.mp = Math.min(h.maxMp, h.mp + 0.1);
+
+                if (h.shieldActive) {
+                    h.shieldTimer--;
+                    if (h.shieldTimer <= 0) h.shieldActive = false;
+                }
+                if (h.paralyzed) {
+                    h.paralysisTimer--;
+                    if (h.paralysisTimer <= 0) h.paralyzed = false;
+                }
+                if (h.speedBoost) {
+                    h.speedBoostTimer--;
+                    if (h.speedBoostTimer <= 0) h.speedBoost = false;
+                }
+
+                // Q-Learning AI 決策邏輯
+                if (h.isAI) {
+                    h.aiTimer++;
+                    if (h.aiTimer % 15 === 0) {
+                        let state = getQStateKey(h);
+                        let action = chooseQAction(state);
+                        h.currentAction = action;
+
+                        let target = getNearestEnemyHero(h);
+                        if (action === 'push_base') {
+                            if (mapConfig.isBrawl || !bases.length) {
+                                if (target) { h.x += (target.x - h.x) * 0.02; h.y += (target.y - h.y) * 0.02; }
+                            } else {
+                                let enemyBase = bases.find(b => b.team !== h.team);
+                                if (enemyBase) { h.x += (enemyBase.x - h.x) * 0.015; h.y += (enemyBase.y - h.y) * 0.015; }
+                            }
+                        } else if (action === 'retreat_fountain') {
+                            let myBase = bases.find(b => b.team === h.team);
+                            if (myBase) { h.x += (myBase.x - h.x) * 0.02; h.y += (myBase.y - h.y) * 0.02; }
+                        } else if (action === 'cast_fireball' && target) {
+                            castSkill(h, 'Fireball', target.x, target.y);
+                        } else if (action === 'cast_heal') {
+                            castSkill(h, 'Heal', h.x, h.y);
+                        }
+
+                        // 學習更新
+                        let reward = 0;
+                        if (target && Math.hypot(target.x - h.x, target.y - h.y) < 100) reward += 5;
+                        if (h.hp < h.maxHp * 0.3 && action === 'retreat_fountain') reward += 10;
+                        updateQValue(state, action, reward, getQStateKey(h));
+                    }
+                }
+            }
         });
 
-        players.forEach(p => {
-            if (p.isDead) return;
-            miniCtx.beginPath();
-            miniCtx.arc(p.x * scaleX, p.y * scaleY, p.isAI ? 3 : 5, 0, Math.PI * 2);
-            miniCtx.fillStyle = p.isAI ? '#ff3366' : '#00ff66';
-            miniCtx.fill();
-        });
+        // 投射物更新
+        for (let i = projectileList.length - 1; i >= 0; i--) {
+            let p = projectileList[i];
+            p.x += p.vx;
+            p.y += p.vy;
+
+            // 碰撞檢測
+            heroes.forEach(h => {
+                if (h !== p.caster && !h.isDead && (p.caster.team === 'ffa' || h.team !== p.caster.team)) {
+                    if (Math.hypot(h.x - p.x, h.y - p.y) < h.radius + p.radius) {
+                        h.hp -= p.damage;
+                        createFloatingText(h.x, h.y - 30, `-${p.damage}`, "#ff6b6b");
+                        projectileList.splice(i, 1);
+                    }
+                }
+            });
+        }
+
+        // 更新計分板 UI
+        updateScoreboardUI();
     }
 
-    // --- 11. Event Controllers ---
-    document.getElementById('btn-login-modal').addEventListener('click', () => {
-        document.getElementById('modal-login').classList.remove('hidden');
-    });
-    document.getElementById('btn-close-login').addEventListener('click', () => {
-        document.getElementById('modal-login').classList.add('hidden');
-    });
-    document.getElementById('btn-do-login').addEventListener('click', () => {
-        const user = document.getElementById('login-username').value;
-        if (user) {
-            logMessage(`[雲端] 玩家 ${user} 登入成功，Q-Table 已寫入雲端伺服器！`);
-            vipCoins += 50;
-            globalQAgent.syncToCloud();
-            document.getElementById('modal-login').classList.add('hidden');
+    function updateScoreboardUI() {
+        let html = "";
+        if (mapConfig.isBrawl) {
+            html += `<div class="team-title team-ffa">全網無限大亂鬥 (混戰)</div>`;
+            heroes.sort((a,b) => b.kills - a.kills).slice(0, 10).forEach(h => {
+                html += `
+                    <div class="stat-line">
+                        <span class="stat-label">${h.name}:</span>
+                        <span class="stat-value">${h.kills} K / ${h.deaths} D</span>
+                    </div>
+                `;
+            });
+        } else {
+            html += `<div class="team-title team-blue">藍方陣營</div>`;
+            heroes.filter(h => h.team === 'blue').forEach(h => {
+                html += `<div class="stat-line"><span class="stat-label">${h.name}:</span><span class="stat-value">${h.kills}/${h.deaths}</span></div>`;
+            });
+            html += `<div class="team-title team-red" style="margin-top:10px;">紅方陣營</div>`;
+            heroes.filter(h => h.team === 'red').forEach(h => {
+                html += `<div class="stat-line"><span class="stat-label">${h.name}:</span><span class="stat-value">${h.kills}/${h.deaths}</span></div>`;
+            });
         }
-    });
+        scoreboardContent.innerHTML = html;
+    }
 
-    document.getElementById('btn-settings-modal').addEventListener('click', () => {
-        document.getElementById('modal-settings').classList.remove('hidden');
-    });
-    document.getElementById('btn-save-settings').addEventListener('click', () => {
-        document.getElementById('modal-settings').classList.add('hidden');
-        initGame();
-    });
+    function renderFrame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    document.getElementById('btn-vip-shop').addEventListener('click', () => {
-        document.getElementById('modal-vip').classList.remove('hidden');
-    });
-    document.getElementById('btn-close-vip').addEventListener('click', () => {
-        document.getElementById('modal-vip').classList.add('hidden');
-    });
+        // 畫地圖草地網格 (3D 視角網格)
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+        ctx.lineWidth = 1;
+        let gridSize = 100;
+        let startX = -(camera.x % gridSize);
+        let startY = -(camera.y % gridSize);
 
-    document.getElementById('btn-restart-game').addEventListener('click', () => {
-        initGame();
-        logMessage("[系統] 戰局重新啟動完成！");
-    });
+        for (let x = startX; x < canvas.width; x += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+        }
+        for (let y = startY; y < canvas.height; y += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+        }
 
-    document.querySelectorAll('.mode-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-            document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
-            const target = e.currentTarget;
-            target.classList.add('active');
-            gameMode = target.getAttribute('data-mode');
+        // 畫基地與防禦塔
+        bases.forEach(b => b.draw());
+        towers.forEach(t => t.draw());
+
+        // 畫野怪
+        wildMonsters.forEach(m => m.draw());
+
+        // 畫英雄
+        heroes.forEach(h => h.draw());
+
+        // 畫投射物與視覺特效
+        projectileList.forEach(p => {
+            ctx.fillStyle = "#ff5252";
+            ctx.beginPath();
+            ctx.arc(p.x - camera.x, p.y - camera.y, p.radius, 0, Math.PI * 2);
+            ctx.fill();
         });
-    });
 
-    // Application Start Sequence
-    resizeCanvas();
-    renderShop('attack');
-    initGame();
+        for (let i = visualEffects.length - 1; i >= 0; i--) {
+            let fx = visualEffects[i];
+            fx.life--;
+            if (fx.type === 'text') {
+                ctx.fillStyle = fx.color;
+                ctx.font = "bold 13px Segoe UI";
+                ctx.textAlign = "center";
+                ctx.fillText(fx.text, fx.x - camera.x, fx.y - camera.y - (fx.maxLife - fx.life));
+            }
+            if (fx.life <= 0) visualEffects.splice(i, 1);
+        }
+    }
+
+    // 啟動渲染循環
     requestAnimationFrame(gameLoop);
+
 </script>
